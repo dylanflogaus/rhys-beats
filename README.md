@@ -116,6 +116,23 @@ If the log says Wrangler is using **`CLOUDFLARE_API_TOKEN`** and the request to 
 
 See also: [Use Direct Upload with Continuous Integration](https://developers.cloudflare.com/pages/how-to/use-direct-upload-with-continuous-integration/) (token expectations for Pages uploads).
 
+### “I only have a Worker” vs this repo
+
+In the dashboard, **Workers** and **Pages** are different deployment types.
+
+- This app uses **`public/`** (static site) plus **`functions/`** (**Pages Functions**). That combination is deployed with **`wrangler pages deploy`**, which talks to the **Pages** API (`/pages/projects/...`).
+- A **classic Worker** (single script, `wrangler deploy`) does **not** automatically count as a Pages project. If you never created a **Pages** project, `wrangler pages deploy` will return **project not found** (`8000007`) until you create one.
+
+**What to do:** Create a **Pages** project (same account is fine): **Workers & Pages** → **Create** → choose **Pages** (not “Worker only”), name it **`rhys-beats`** (or change `wrangler.toml` / use `--project-name` to match).
+
+To list existing **Pages** projects from the CLI:
+
+```bash
+npx wrangler pages project list
+```
+
+(If you only ever created a Worker, this list may be empty until you add a Pages project.)
+
 ### CI: `Project not found` / `[code: 8000007]`
 
 If the log says the request to **`/pages/projects/rhys-beats`** failed with **Project not found**, Wrangler is using the **`name`** field from `wrangler.toml` (here: **`rhys-beats`**) and **no Pages project with that exact name** exists on your account yet.
