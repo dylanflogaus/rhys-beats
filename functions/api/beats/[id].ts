@@ -27,7 +27,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       .bind(beatId)
       .run();
 
-    await context.env.BEATS_BUCKET.delete(row.r2_key).catch(() => {});
+    await context.env.BEATS_KV.delete(row.r2_key).catch(() => {});
 
     return new Response(null, { status: 204 });
   } catch {

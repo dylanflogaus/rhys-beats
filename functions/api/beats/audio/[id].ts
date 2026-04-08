@@ -23,12 +23,12 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       return jsonError("Beat not found.", 404);
     }
 
-    const object = await context.env.BEATS_BUCKET.get(row.r2_key);
-    if (!object || !object.body) {
+    const stream = await context.env.BEATS_KV.get(row.r2_key, { type: "stream" });
+    if (!stream) {
       return jsonError("File missing.", 404);
     }
 
-    return new Response(object.body, {
+    return new Response(stream, {
       headers: {
         "Content-Type": row.mime_type || "audio/mpeg",
         "Cache-Control": "public, max-age=31536000, immutable",

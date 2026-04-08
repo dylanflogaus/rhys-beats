@@ -60,12 +60,12 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         typeof notes === "string" && notes.trim() ? notes.trim() : null;
 
       const safeName = sanitizeOriginalName(file.name);
-      const r2Key = `${Date.now()}-${safeName}`;
+      const storageKey = `${Date.now()}-${safeName}`;
 
-      await env.BEATS_BUCKET.put(r2Key, file.stream(), {
-        httpMetadata: { contentType: file.type || "application/octet-stream" },
+      await env.BEATS_KV.put(storageKey, file.stream(), {
+        metadata: { mime: file.type || "application/octet-stream" },
       });
-      uploadedKey = r2Key;
+      uploadedKey = storageKey;
 
       const stmt = env.DB.prepare(
         `
@@ -83,7 +83,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
           beatKeyVal,
           notesVal,
           safeName,
-          r2Key,
+          storageKey,
           file.type || "application/octet-stream"
         )
         .first<{
@@ -105,7 +105,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       return Response.json(rowToJson(row), { status: 201 });
     } catch {
       if (uploadedKey) {
-        await env.BEATS_BUCKET.delete(uploadedKey).catch(() => {});
+        await env.BEATS_KV.delete(uploadedKey).catch(() => {});
       }
       return jsonError("Failed to save beat.", 500);
     }

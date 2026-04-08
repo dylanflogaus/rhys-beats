@@ -1,6 +1,6 @@
 export interface Env {
   DB: D1Database;
-  BEATS_BUCKET: R2Bucket;
+  BEATS_KV: KVNamespace;
 }
 
 export type BeatRow = {

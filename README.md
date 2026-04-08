@@ -1,35 +1,41 @@
 # Beat Vault
 
-Upload, preview, and delete beats. Runs on **Cloudflare Pages** with **D1** (metadata) and **R2** (audio files).
+Upload, preview, and delete beats. Runs on **Cloudflare Pages** with **D1** (metadata) and **Workers KV** (audio files). No R2—KV is included with Workers/Pages and fits typical hobby use.
 
 ## Features
 
 - Upload audio with title, producer, BPM, key, and notes
 - Stream playback in the browser
-- Delete removes both the DB row and the R2 object
+- Delete removes both the D1 row and the KV value
+
+## Limits (know before you scale)
+
+- **KV value size:** up to **25 MiB** per beat file (this app enforces the same upload cap).
+- **KV free tier:** daily read/write caps apply ([KV docs](https://developers.cloudflare.com/kv/platform/limits/)). Fine for personal/low traffic; heavy streaming may need a paid plan or a different store.
 
 ## Prerequisites
 
 - Cloudflare account
-- [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/) (installed via `npm install`)
+- [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/) (`npm install`)
 
 ## One-time setup
 
-1. **Create D1** (copy `database_id` into `wrangler.toml`):
+1. **D1** — create and put `database_id` in `wrangler.toml`:
 
    ```bash
    npx wrangler d1 create rhys-beats
    ```
 
-   Replace `REPLACE_WITH_D1_DATABASE_ID` in `wrangler.toml` with the printed id.
-
-2. **Create R2 bucket** (name must match `bucket_name` in `wrangler.toml`):
+2. **KV** — create **production** and **preview** namespaces (preview is used by `wrangler pages dev`):
 
    ```bash
-   npx wrangler r2 bucket create rhys-beats-audio
+   npx wrangler kv namespace create beat-vault-audio
+   npx wrangler kv namespace create beat-vault-audio --preview
    ```
 
-3. **Apply schema** to production D1:
+   Paste the printed ids into `wrangler.toml` as `id` and `preview_id` for the `BEATS_KV` binding.
+
+3. **Schema** — apply migrations to production D1:
 
    ```bash
    npx wrangler d1 migrations apply rhys-beats --remote
@@ -47,21 +53,21 @@ Open the URL Wrangler prints (usually `http://localhost:8788`).
 
 ## Deploy (CLI)
 
-From the repo root:
-
 ```bash
 npm install
-npx wrangler d1 migrations apply rhys-beats --remote   # if schema changed
+npx wrangler d1 migrations apply rhys-beats --remote   # when migrations change
 npm run deploy
 ```
 
 ## Deploy (Git / Cloudflare Dashboard)
 
-- **Build command:** leave empty (or `exit 0`)
 - **Build output directory:** `public`
-- Ensure the same **D1** and **R2** bindings exist for the Pages project (Wrangler/Git deploy picks up `wrangler.toml` when configured, or add bindings under **Settings → Functions**).
+- **Build command:** leave empty if you only serve static files from `public`
+- Under **Settings → Functions**, bind:
+  - **D1** → variable `DB` (same DB as in `wrangler.toml`)
+  - **KV** → variable `BEATS_KV` (production namespace)
 
-After changing schema, run `npm run db:apply:remote` (or the `wrangler d1 migrations apply` command above) against the production database.
+If you deploy with Wrangler and the project uses this `wrangler.toml`, bindings are usually applied automatically.
 
 ## Project layout
 
@@ -70,9 +76,9 @@ After changing schema, run `npm run db:apply:remote` (or the `wrangler d1 migrat
 | `public/` | Static HTML/CSS/JS |
 | `functions/api/beats.ts` | `GET` / `POST /api/beats` |
 | `functions/api/beats/[id].ts` | `DELETE /api/beats/:id` |
-| `functions/api/beats/audio/[id].ts` | `GET /api/beats/audio/:id` (stream from R2) |
+| `functions/api/beats/audio/[id].ts` | `GET /api/beats/audio/:id` (bytes from KV) |
 | `migrations/` | D1 SQL migrations |
 
 ## Audio URLs
 
-Playback uses `/api/beats/audio/:id` so files are served from R2 via the Worker, not from a local `uploads/` folder.
+Playback uses `/api/beats/audio/:id`. The Worker reads the key from D1 and streams the value from **KV**.
