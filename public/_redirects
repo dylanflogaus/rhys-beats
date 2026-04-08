@@ -1,0 +1,5 @@
+# Pretty URLs → actual HTML (Cloudflare Pages)
+/login    /login.html   302
+/sign-in  /login.html   302
+/register /register.html 302
+/sign-up  /register.html 302

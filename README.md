@@ -85,4 +85,10 @@ npm run dev
 
 Open the local URL shown by Wrangler.
 
-- Sign up at `/register.html`, then use the app at `/` (or sign in at `/login.html`).
+- Sign up at `/register` (or `/register.html`), then use the app at `/` (sign in at `/login`).
+
+### Sign-in page missing or blank in production
+
+- Open **`/login.html`** directly. If that 404s, check Pages **Build output directory** is **`public`** (repo root), not a nested path.
+- Use **root-absolute** assets (`/styles.css`, `/login.js`): relative `login.js` breaks if the URL is not exactly `/login.html`.
+- **`public/_redirects`** maps `/login` → `/login.html` and `/register` → `/register.html` on Cloudflare Pages.
