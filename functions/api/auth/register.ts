@@ -6,7 +6,7 @@ import {
   randomSaltHex,
   setSessionCookie,
 } from "../../lib/auth";
-import { type Env, jsonError } from "../../lib/shared";
+import { type Env, getErrorMessage, jsonError } from "../../lib/shared";
 
 export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
   if (!env.DB) return jsonError("Server misconfigured: missing D1 binding `DB`.", 500);
@@ -39,6 +39,16 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
   const salt = randomSaltHex();
   const passwordHash = await hashPassword(password, salt);
 
+  const existing = await env.DB.prepare(
+    "SELECT id FROM users WHERE username = ? COLLATE NOCASE"
+  )
+    .bind(username)
+    .first<{ id: number }>();
+
+  if (existing) {
+    return jsonError("Username already taken.", 409);
+  }
+
   try {
     const result = await env.DB.prepare(
       "INSERT INTO users (username, password_hash, salt) VALUES (?, ?, ?) RETURNING id, username"
@@ -58,7 +68,14 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
         headers: { "Set-Cookie": setSessionCookie(request, token) },
       }
     );
-  } catch {
-    return jsonError("Username already taken.", 409);
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    if (/UNIQUE|unique constraint|SQLITE_CONSTRAINT_UNIQUE/i.test(msg)) {
+      return jsonError("Username already taken.", 409);
+    }
+    return jsonError(
+      "Could not create account. If you run this site, apply D1 migrations (including 0002) on production.",
+      500
+    );
   }
 };
