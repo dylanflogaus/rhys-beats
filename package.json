@@ -1,8 +1,8 @@
 {
   "name": "rhys-beats",
   "version": "1.0.0",
-  "description": "Simple website to upload and store beats",
-  "main": "server.js",
+  "description": "Beat vault on Cloudflare Pages (D1 + KV)",
+  "private": true,
   "scripts": {
     "dev": "node server.js",
     "start": "node server.js",
