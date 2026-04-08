@@ -39,6 +39,14 @@ Put those IDs into `wrangler.toml`:
 npx wrangler d1 migrations apply rhys-beats --remote
 ```
 
+4. **Accounts** — migration `0002` adds a `users` table, `user_id` on `beats`, and uses **KV** for login sessions (same `BEATS_KV` namespace; keys are prefixed `sess:`). After upgrading an existing database, run migrations again:
+
+```bash
+npx wrangler d1 migrations apply rhys-beats --remote
+```
+
+If you had beats from before multi-user support, rows may have `user_id` NULL and will not show for any user until you remove them or assign an owner in SQL.
+
 ## Cloudflare Pages project settings
 
 In the dashboard for your Pages project:
@@ -60,3 +68,5 @@ npm run dev
 ```
 
 Open the local URL shown by Wrangler.
+
+- Sign up at `/register.html`, then use the app at `/` (or sign in at `/login.html`).

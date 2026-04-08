@@ -1,13 +1,45 @@
 const beatForm = document.getElementById("beatForm");
 const beatsList = document.getElementById("beatsList");
 const formMessage = document.getElementById("formMessage");
+const userBar = document.getElementById("userBar");
+const userLabel = document.getElementById("userLabel");
+const logoutBtn = document.getElementById("logoutBtn");
+
+const fetchOpts = { credentials: "same-origin" };
+
+async function requireAuth() {
+  const response = await fetch("/api/auth/me", fetchOpts);
+  if (response.status === 401) {
+    window.location.href = "/login.html";
+    return null;
+  }
+  if (!response.ok) {
+    throw new Error("Could not verify login.");
+  }
+  return response.json();
+}
+
+function showUser(user) {
+  if (!userBar || !userLabel) return;
+  userLabel.textContent = `Signed in as ${user.username}`;
+  userBar.hidden = false;
+}
 
 async function fetchBeats() {
   beatsList.innerHTML = "<p>Loading beats...</p>";
 
   try {
-    const response = await fetch("/api/beats");
+    const response = await fetch("/api/beats", fetchOpts);
+    if (response.status === 401) {
+      window.location.href = "/login.html";
+      return;
+    }
+
     const beats = await response.json();
+    if (beats.error) {
+      beatsList.innerHTML = `<p>${escapeHtml(beats.error)}</p>`;
+      return;
+    }
 
     if (!beats.length) {
       beatsList.innerHTML = "<p>No beats saved yet.</p>";
@@ -51,9 +83,15 @@ beatForm.addEventListener("submit", async (event) => {
     const response = await fetch("/api/beats", {
       method: "POST",
       body: formData,
+      ...fetchOpts,
     });
 
     const data = await response.json().catch(() => ({}));
+
+    if (response.status === 401) {
+      window.location.href = "/login.html";
+      return;
+    }
 
     if (!response.ok) {
       throw new Error(data.error || "Failed to save beat.");
@@ -79,7 +117,14 @@ beatsList.addEventListener("click", async (event) => {
   if (!shouldDelete) return;
 
   try {
-    const response = await fetch(`/api/beats/${id}`, { method: "DELETE" });
+    const response = await fetch(`/api/beats/${id}`, {
+      method: "DELETE",
+      ...fetchOpts,
+    });
+    if (response.status === 401) {
+      window.location.href = "/login.html";
+      return;
+    }
     if (!response.ok) {
       throw new Error("Delete failed.");
     }
@@ -87,6 +132,15 @@ beatsList.addEventListener("click", async (event) => {
   } catch (_error) {
     alert("Failed to delete beat.");
   }
+});
+
+logoutBtn?.addEventListener("click", async () => {
+  try {
+    await fetch("/api/auth/logout", { method: "POST", ...fetchOpts });
+  } catch (_e) {
+    // ignore
+  }
+  window.location.href = "/login.html";
 });
 
 function escapeHtml(value) {
@@ -98,4 +152,11 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
-fetchBeats();
+requireAuth()
+  .then((user) => {
+    if (user) showUser(user);
+  })
+  .catch(() => {
+    window.location.href = "/login.html";
+  })
+  .then(() => fetchBeats());

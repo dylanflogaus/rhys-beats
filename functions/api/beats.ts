@@ -1,4 +1,5 @@
 import type { PagesFunction } from "@cloudflare/workers-types";
+import { getSessionUserId } from "../lib/auth";
 import {
   type BeatRow,
   type Env,
@@ -12,15 +13,23 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
   if (!env.DB) return jsonError("Server misconfigured: missing D1 binding `DB`.", 500);
   if (!env.BEATS_KV) return jsonError("Server misconfigured: missing KV binding `BEATS_KV`.", 500);
 
+  const userId = await getSessionUserId(env, request);
+  if (!userId) {
+    return jsonError("Unauthorized.", 401);
+  }
+
   if (request.method === "GET") {
     try {
       const { results } = await env.DB.prepare(
         `
         SELECT id, title, producer, bpm, beat_key, notes, file_name, mime_type, created_at
         FROM beats
+        WHERE user_id = ?
         ORDER BY datetime(created_at) DESC
         `
-      ).all();
+      )
+        .bind(userId)
+        .all();
 
       const rows = (results ?? []) as BeatRow[];
       return Response.json(rows.map(rowToBeat));
@@ -37,6 +46,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
       const bpmRaw = String(form.get("bpm") ?? "").trim();
       const beatKey = String(form.get("beatKey") ?? "").trim();
       const notes = String(form.get("notes") ?? "").trim();
+      const bpmVal = bpmRaw ? Number(bpmRaw) : null;
 
       const fileInput = form.get("beatFile");
       if (!title) {
@@ -60,15 +70,16 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
 
       const row = await env.DB.prepare(
         `
-        INSERT INTO beats (title, producer, bpm, beat_key, notes, file_name, r2_key, mime_type)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO beats (user_id, title, producer, bpm, beat_key, notes, file_name, r2_key, mime_type)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         RETURNING id, title, producer, bpm, beat_key, notes, file_name, mime_type, created_at
         `
       )
         .bind(
+          userId,
           title,
           producer || null,
-          bpmRaw ? Number(bpmRaw) : null,
+          bpmVal !== null && Number.isFinite(bpmVal) ? bpmVal : null,
           beatKey || null,
           notes || null,
           safeName,
