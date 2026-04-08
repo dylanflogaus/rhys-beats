@@ -4,7 +4,7 @@
 # 2. Create KV namespaces (production + preview for local dev):
 #      npx wrangler kv namespace create beat-vault-audio
 #      npx wrangler kv namespace create beat-vault-audio --preview
-#    Put both ids below (id = production, preview_id = preview)
+#    Put both UUIDs below — placeholders break deploy (error 8000022: not a valid hex string).
 # 3. Apply schema: npx wrangler d1 migrations apply rhys-beats --remote
 # 4. Pages dashboard: bind D1 + KV if Git deploy does not read wrangler.toml
 # 5. `name` below MUST match an existing Cloudflare Pages project name (create in dashboard or:

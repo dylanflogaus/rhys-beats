@@ -33,7 +33,8 @@ Upload, preview, and delete beats. Runs on **Cloudflare Pages** with **D1** (met
    npx wrangler kv namespace create beat-vault-audio --preview
    ```
 
-   Paste the printed ids into `wrangler.toml` as `id` and `preview_id` for the `BEATS_KV` binding.
+   Paste the printed ids into `wrangler.toml` as `id` and `preview_id` for the `BEATS_KV` binding.  
+   **Until both are real UUIDs** (not `REPLACE_WITH_...`), `wrangler pages deploy` will fail with **`Invalid KV namespace ID`** / **`8000022`**.
 
 3. **Schema** — apply migrations to production D1:
 
@@ -153,6 +154,27 @@ If the log says the request to **`/pages/projects/rhys-beats`** failed with **Pr
    - change `name = "rhys-beats"` in `wrangler.toml` to that name, or
    - set the deploy command to:  
      `npx wrangler pages deploy public --project-name=YOUR_EXISTING_NAME`
+
+### CI: `Invalid KV namespace ID` / `[code: 8000022]`
+
+Your build log shows Wrangler is still using the **placeholder** `REPLACE_WITH_KV_NAMESPACE_ID` (or preview) from `wrangler.toml`. Cloudflare expects a **32-character hex** namespace id.
+
+**Fix:**
+
+1. Create namespaces (if you have not already):
+
+   ```bash
+   npx wrangler kv namespace create beat-vault-audio
+   npx wrangler kv namespace create beat-vault-audio --preview
+   ```
+
+2. Copy each command’s **`id`** into `wrangler.toml`:
+   - **`id`** = production namespace id  
+   - **`preview_id`** = preview namespace id  
+
+3. **Commit and push** `wrangler.toml` (or set these via your CI secret injection if you keep ids out of git—then ensure the file Wrangler reads contains valid hex, not placeholders).
+
+4. Redeploy.
 
 ## Project layout
 
