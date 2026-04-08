@@ -23,5 +23,5 @@ database_id = "b3a82d24-c0d0-420e-ab9c-0ee4a1d07782"
 
 [[kv_namespaces]]
 binding = "BEATS_KV"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
-preview_id = "REPLACE_WITH_KV_PREVIEW_NAMESPACE_ID"
+id = "f4243f4f0d444edc922ccfce034678ff"
+preview_id = "ebfa9a4a0e574f569fb0178620280ae2"
