@@ -1,27 +1,16 @@
-# Cloudflare Pages + D1 + KV (audio blobs in KV — no R2)
-# Deploy with: npx wrangler pages deploy public   (NOT `wrangler deploy`)
-# 1. Create D1: npx wrangler d1 create rhys-beats  → put database_id below
-# 2. Create KV namespaces (production + preview for local dev):
-#      npx wrangler kv namespace create beat-vault-audio
-#      npx wrangler kv namespace create beat-vault-audio --preview
-#    Put both UUIDs below — placeholders break deploy (error 8000022: not a valid hex string).
-# 3. Apply schema: npx wrangler d1 migrations apply rhys-beats --remote
-# 4. Pages dashboard: bind D1 + KV if Git deploy does not read wrangler.toml
-# 5. `name` below MUST match an existing Cloudflare Pages project name (create in dashboard or:
-#      npx wrangler pages project create rhys-beats --production-branch main
-#    If your dashboard project has a different name, change `name` or pass --project-name=...
-
 name = "rhys-beats"
-compatibility_date = "2024-11-12"
+compatibility_date = "2026-04-08"
 pages_build_output_dir = "public"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "rhys-beats"
-# Replace after: npx wrangler d1 create rhys-beats
+# Replace with: npx wrangler d1 create rhys-beats
 database_id = "b3a82d24-c0d0-420e-ab9c-0ee4a1d07782"
 
 [[kv_namespaces]]
 binding = "BEATS_KV"
+# Replace with: npx wrangler kv namespace create beat-vault-audio
 id = "f4243f4f0d444edc922ccfce034678ff"
+# Replace with: npx wrangler kv namespace create beat-vault-audio --preview
 preview_id = "ebfa9a4a0e574f569fb0178620280ae2"

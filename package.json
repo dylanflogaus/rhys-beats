@@ -1,11 +1,11 @@
 {
   "name": "rhys-beats",
   "version": "1.0.0",
-  "description": "Beat vault on Cloudflare Pages (D1 + KV)",
+  "description": "Beat vault for Cloudflare Pages",
   "private": true,
   "scripts": {
     "dev": "wrangler pages dev public",
-    "deploy": "wrangler pages deploy public",
+    "deploy:manual": "wrangler pages deploy public",
     "db:apply:local": "wrangler d1 migrations apply rhys-beats --local",
     "db:apply:remote": "wrangler d1 migrations apply rhys-beats --remote"
   },
@@ -13,7 +13,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250313.0",
-    "wrangler": "^4.10.0"
+    "@cloudflare/workers-types": "^4.20250404.0",
+    "wrangler": "^4.81.0"
   }
 }

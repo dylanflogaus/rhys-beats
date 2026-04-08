@@ -1,112 +1,78 @@
 import type { PagesFunction } from "@cloudflare/workers-types";
-import {
-  type BeatRow,
-  Env,
-  jsonError,
-  rowToJson,
-  sanitizeOriginalName,
-  validateAudioFile,
-} from "../lib/beat-api";
+import { type BeatRow, type Env, MAX_FILE_SIZE_BYTES, jsonError, rowToBeat } from "../lib/shared";
 
-export const onRequest: PagesFunction<Env> = async (context) => {
-  const { request, env } = context;
-
+export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
   if (request.method === "GET") {
     try {
       const { results } = await env.DB.prepare(
         `
         SELECT id, title, producer, bpm, beat_key, notes, file_name, mime_type, created_at
         FROM beats
-        ORDER BY datetime(created_at) DESC;
+        ORDER BY datetime(created_at) DESC
         `
       ).all();
 
       const rows = (results ?? []) as BeatRow[];
-      return Response.json(rows.map((r) => rowToJson(r)));
+      return Response.json(rows.map(rowToBeat));
     } catch {
       return jsonError("Failed to load beats.", 500);
     }
   }
 
   if (request.method === "POST") {
-    let uploadedKey: string | null = null;
     try {
       const form = await request.formData();
-      const titleRaw = form.get("title");
-      const title = typeof titleRaw === "string" ? titleRaw.trim() : "";
+      const title = String(form.get("title") ?? "").trim();
+      const producer = String(form.get("producer") ?? "").trim();
+      const bpmRaw = String(form.get("bpm") ?? "").trim();
+      const beatKey = String(form.get("beatKey") ?? "").trim();
+      const notes = String(form.get("notes") ?? "").trim();
 
-      const fileResult = await validateAudioFile(form.get("beatFile"));
-      if (fileResult instanceof Response) {
-        return fileResult;
-      }
-      const file = fileResult;
-
+      const fileInput = form.get("beatFile");
       if (!title) {
         return jsonError("Title is required.", 400);
       }
+      if (!(fileInput instanceof File)) {
+        return jsonError("Beat file is required.", 400);
+      }
+      if (!fileInput.type.startsWith("audio/")) {
+        return jsonError("Only audio files are allowed.", 400);
+      }
+      if (fileInput.size > MAX_FILE_SIZE_BYTES) {
+        return jsonError("File too large. Max size is 25 MB.", 400);
+      }
 
-      const producer = form.get("producer");
-      const bpmRaw = form.get("bpm");
-      const beatKey = form.get("beatKey");
-      const notes = form.get("notes");
-
-      const producerVal =
-        typeof producer === "string" && producer.trim() ? producer.trim() : null;
-      const bpmVal =
-        typeof bpmRaw === "string" && bpmRaw.trim() ? Number(bpmRaw) : null;
-      const beatKeyVal =
-        typeof beatKey === "string" && beatKey.trim() ? beatKey.trim() : null;
-      const notesVal =
-        typeof notes === "string" && notes.trim() ? notes.trim() : null;
-
-      const safeName = sanitizeOriginalName(file.name);
-      const storageKey = `${Date.now()}-${safeName}`;
-
-      await env.BEATS_KV.put(storageKey, file.stream(), {
-        metadata: { mime: file.type || "application/octet-stream" },
+      const safeName = fileInput.name.replace(/\s+/g, "-").toLowerCase() || "beat";
+      const fileKey = `${Date.now()}-${safeName}`;
+      await env.BEATS_KV.put(fileKey, await fileInput.arrayBuffer(), {
+        metadata: { mimeType: fileInput.type },
       });
-      uploadedKey = storageKey;
 
-      const stmt = env.DB.prepare(
+      const row = await env.DB.prepare(
         `
         INSERT INTO beats (title, producer, bpm, beat_key, notes, file_name, r2_key, mime_type)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        RETURNING id, title, producer, bpm, beat_key, notes, file_name, mime_type, created_at;
+        RETURNING id, title, producer, bpm, beat_key, notes, file_name, mime_type, created_at
         `
-      );
-
-      const row = await stmt
+      )
         .bind(
           title,
-          producerVal,
-          Number.isFinite(bpmVal as number) ? bpmVal : null,
-          beatKeyVal,
-          notesVal,
+          producer || null,
+          bpmRaw ? Number(bpmRaw) : null,
+          beatKey || null,
+          notes || null,
           safeName,
-          storageKey,
-          file.type || "application/octet-stream"
+          fileKey,
+          fileInput.type
         )
-        .first<{
-          id: number;
-          title: string;
-          producer: string | null;
-          bpm: number | null;
-          beat_key: string | null;
-          notes: string | null;
-          file_name: string;
-          mime_type: string;
-          created_at: string;
-        }>();
+        .first<BeatRow>();
 
       if (!row) {
-        throw new Error("Insert returned no row");
+        return jsonError("Failed to save beat.", 500);
       }
 
-      return Response.json(rowToJson(row), { status: 201 });
+      return Response.json(rowToBeat(row), { status: 201 });
     } catch {
-      if (uploadedKey) {
-        await env.BEATS_KV.delete(uploadedKey).catch(() => {});
-      }
       return jsonError("Failed to save beat.", 500);
     }
   }

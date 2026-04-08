@@ -1,5 +1,3 @@
--- D1 schema for Beat Vault (audio bytes live in KV; r2_key holds the KV object key)
-
 CREATE TABLE IF NOT EXISTS beats (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
