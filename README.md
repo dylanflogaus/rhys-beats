@@ -95,6 +95,27 @@ Do **not** run `npx wrangler deploy` for this project — Wrangler will look for
 
 If you deploy with Wrangler and the project uses this `wrangler.toml`, bindings are usually applied automatically.
 
+### CI: `Authentication error [code: 10000]` on `wrangler pages deploy`
+
+If the log says Wrangler is using **`CLOUDFLARE_API_TOKEN`** and the request to **`/pages/projects/rhys-beats`** fails with **Authentication error**, that token is missing **Pages** (and often related) permissions.
+
+**Fix (pick one):**
+
+1. **Use a token that can deploy Pages** — create or edit an [API token](https://dash.cloudflare.com/profile/api-tokens) with at least:
+   - **Account** → **Cloudflare Pages** → **Edit**
+   - **Account** → **Workers Scripts** → **Edit** (needed to publish the Functions bundle)
+   - **Account** → **Workers KV Storage** → **Edit** (this app uses `BEATS_KV`)
+   - **Account** → **D1** → **Edit** (this app uses D1)
+   - **User** → **User details** → **Read**
+
+   Put that token in your CI/Pages environment as **`CLOUDFLARE_API_TOKEN`** and redeploy.
+
+2. **Stop overriding the token (if you use Cloudflare’s native Git integration)** — If you set **`CLOUDFLARE_API_TOKEN`** in the Pages project to a narrow token, remove it or replace it with a token that includes **Cloudflare Pages → Edit**. Some tutorials only add **Workers** scopes; that is not enough for `wrangler pages deploy`.
+
+3. **Create the Pages project first** — In the dashboard, **Workers & Pages** → **Create** → **Pages** → connect the repo or create a project named **`rhys-beats`** so the API target exists. Deploy again.
+
+See also: [Use Direct Upload with Continuous Integration](https://developers.cloudflare.com/pages/how-to/use-direct-upload-with-continuous-integration/) (token expectations for Pages uploads).
+
 ## Project layout
 
 | Path | Role |
