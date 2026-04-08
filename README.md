@@ -61,8 +61,34 @@ npm run deploy
 
 ## Deploy (Git / Cloudflare Dashboard)
 
+### Important: Pages vs Workers deploy
+
+This repo is **Cloudflare Pages** (static assets in `public/` + `functions/`). The Worker deploy command is wrong here.
+
+If your build log shows:
+
+- `Executing user deploy command: npx wrangler deploy`
+- `Missing entry-point to Worker script or to assets directory`
+
+then the pipeline is using **Workers** deploy. Change it to **Pages** deploy:
+
+```bash
+npx wrangler pages deploy public
+```
+
+or equivalently:
+
+```bash
+npm run deploy
+```
+
+Do **not** run `npx wrangler deploy` for this project — Wrangler will look for `main = "..."` (a Worker entry) or `[assets]` and fail.
+
+### Pages settings
+
 - **Build output directory:** `public`
-- **Build command:** leave empty if you only serve static files from `public`
+- **Build command:** e.g. `npm clean-install` (or leave empty if you do not need a build step)
+- **Deploy / Wrangler command** (if your project has a custom deploy step): `npx wrangler pages deploy public` or `npm run deploy` — **not** `npx wrangler deploy`
 - Under **Settings → Functions**, bind:
   - **D1** → variable `DB` (same DB as in `wrangler.toml`)
   - **KV** → variable `BEATS_KV` (production namespace)

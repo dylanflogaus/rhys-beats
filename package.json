@@ -1,7 +1,7 @@
 {
   "name": "rhys-beats",
   "version": "1.0.0",
-  "description": "Beat vault on Cloudflare Pages (D1 + R2)",
+  "description": "Beat vault on Cloudflare Pages (D1 + KV)",
   "private": true,
   "scripts": {
     "dev": "wrangler pages dev public",

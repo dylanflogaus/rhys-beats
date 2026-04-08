@@ -1,4 +1,5 @@
 # Cloudflare Pages + D1 + KV (audio blobs in KV — no R2)
+# Deploy with: npx wrangler pages deploy public   (NOT `wrangler deploy`)
 # 1. Create D1: npx wrangler d1 create rhys-beats  → put database_id below
 # 2. Create KV namespaces (production + preview for local dev):
 #      npx wrangler kv namespace create beat-vault-audio
