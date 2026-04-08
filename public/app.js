@@ -1,0 +1,101 @@
+const beatForm = document.getElementById("beatForm");
+const beatsList = document.getElementById("beatsList");
+const formMessage = document.getElementById("formMessage");
+
+async function fetchBeats() {
+  beatsList.innerHTML = "<p>Loading beats...</p>";
+
+  try {
+    const response = await fetch("/api/beats");
+    const beats = await response.json();
+
+    if (!beats.length) {
+      beatsList.innerHTML = "<p>No beats saved yet.</p>";
+      return;
+    }
+
+    beatsList.innerHTML = beats
+      .map(
+        (beat) => `
+        <article class="beat-item">
+          <div class="beat-top">
+            <div>
+              <h3 class="beat-title">${escapeHtml(beat.title)}</h3>
+              <p class="meta">
+                ${beat.producer ? `Producer: ${escapeHtml(beat.producer)} | ` : ""}
+                ${beat.bpm ? `BPM: ${beat.bpm} | ` : ""}
+                ${beat.beatKey ? `Key: ${escapeHtml(beat.beatKey)}` : ""}
+              </p>
+              ${beat.notes ? `<p class="meta">${escapeHtml(beat.notes)}</p>` : ""}
+            </div>
+            <button class="delete-btn" data-id="${beat.id}">Delete</button>
+          </div>
+          <audio controls src="/uploads/${encodeURIComponent(beat.fileName)}"></audio>
+        </article>
+      `
+      )
+      .join("");
+  } catch (_error) {
+    beatsList.innerHTML = "<p>Failed to load beats.</p>";
+  }
+}
+
+beatForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  formMessage.textContent = "Saving...";
+  formMessage.classList.remove("error");
+
+  const formData = new FormData(beatForm);
+
+  try {
+    const response = await fetch("/api/beats", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to save beat.");
+    }
+
+    beatForm.reset();
+    formMessage.textContent = "Beat saved.";
+    await fetchBeats();
+  } catch (error) {
+    formMessage.textContent = error.message;
+    formMessage.classList.add("error");
+  }
+});
+
+beatsList.addEventListener("click", async (event) => {
+  const button = event.target.closest(".delete-btn");
+  if (!button) return;
+
+  const { id } = button.dataset;
+  if (!id) return;
+
+  const shouldDelete = confirm("Delete this beat?");
+  if (!shouldDelete) return;
+
+  try {
+    const response = await fetch(`/api/beats/${id}`, { method: "DELETE" });
+    if (!response.ok) {
+      throw new Error("Delete failed.");
+    }
+    await fetchBeats();
+  } catch (_error) {
+    alert("Failed to delete beat.");
+  }
+});
+
+function escapeHtml(value) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+fetchBeats();

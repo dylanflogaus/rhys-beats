@@ -1,0 +1,5 @@
+node_modules/
+uploads/
+beats.db
+npm-debug.log*
+.cursor/

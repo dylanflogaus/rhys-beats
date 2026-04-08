@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Beat Vault</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="header">
+        <h1>Beat Vault</h1>
+        <p>Upload, preview, and organize your beats.</p>
+      </header>
+
+      <section class="card">
+        <h2>Add Beat</h2>
+        <form id="beatForm">
+          <div class="grid">
+            <label>
+              Title *
+              <input type="text" name="title" required />
+            </label>
+            <label>
+              Producer
+              <input type="text" name="producer" />
+            </label>
+            <label>
+              BPM
+              <input type="number" name="bpm" min="1" max="300" />
+            </label>
+            <label>
+              Key
+              <input type="text" name="beatKey" placeholder="e.g. F# minor" />
+            </label>
+          </div>
+
+          <label>
+            Notes
+            <textarea name="notes" rows="3" placeholder="Mood, use-case, tags..."></textarea>
+          </label>
+
+          <label>
+            Audio File *
+            <input type="file" name="beatFile" accept="audio/*" required />
+          </label>
+
+          <button type="submit">Save Beat</button>
+          <p id="formMessage" class="message"></p>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>My Beats</h2>
+        <div id="beatsList" class="beats-list"></div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
