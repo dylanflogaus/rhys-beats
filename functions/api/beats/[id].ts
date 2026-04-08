@@ -1,7 +1,10 @@
 import type { PagesFunction } from "@cloudflare/workers-types";
-import { type Env, jsonError } from "../../lib/shared";
+import { type Env, getErrorMessage, jsonError } from "../../lib/shared";
 
 export const onRequest: PagesFunction<Env> = async ({ request, env, params }) => {
+  if (!env.DB) return jsonError("Server misconfigured: missing D1 binding `DB`.", 500);
+  if (!env.BEATS_KV) return jsonError("Server misconfigured: missing KV binding `BEATS_KV`.", 500);
+
   if (request.method !== "DELETE") {
     return new Response("Method Not Allowed", { status: 405 });
   }
@@ -24,7 +27,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
     await env.BEATS_KV.delete(row.r2_key);
 
     return new Response(null, { status: 204 });
-  } catch {
-    return jsonError("Failed to delete beat.", 500);
+  } catch (error) {
+    return jsonError(`Failed to delete beat: ${getErrorMessage(error)}`, 500);
   }
 };

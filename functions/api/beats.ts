@@ -1,7 +1,17 @@
 import type { PagesFunction } from "@cloudflare/workers-types";
-import { type BeatRow, type Env, MAX_FILE_SIZE_BYTES, jsonError, rowToBeat } from "../lib/shared";
+import {
+  type BeatRow,
+  type Env,
+  MAX_FILE_SIZE_BYTES,
+  getErrorMessage,
+  jsonError,
+  rowToBeat,
+} from "../lib/shared";
 
 export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
+  if (!env.DB) return jsonError("Server misconfigured: missing D1 binding `DB`.", 500);
+  if (!env.BEATS_KV) return jsonError("Server misconfigured: missing KV binding `BEATS_KV`.", 500);
+
   if (request.method === "GET") {
     try {
       const { results } = await env.DB.prepare(
@@ -14,8 +24,8 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
 
       const rows = (results ?? []) as BeatRow[];
       return Response.json(rows.map(rowToBeat));
-    } catch {
-      return jsonError("Failed to load beats.", 500);
+    } catch (error) {
+      return jsonError(`Failed to load beats: ${getErrorMessage(error)}`, 500);
     }
   }
 
@@ -72,8 +82,8 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
       }
 
       return Response.json(rowToBeat(row), { status: 201 });
-    } catch {
-      return jsonError("Failed to save beat.", 500);
+    } catch (error) {
+      return jsonError(`Failed to save beat: ${getErrorMessage(error)}`, 500);
     }
   }
 

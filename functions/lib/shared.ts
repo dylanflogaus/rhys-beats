@@ -21,6 +21,11 @@ export function jsonError(message: string, status = 400): Response {
   return Response.json({ error: message }, { status });
 }
 
+export function getErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message) return error.message;
+  return "unknown error";
+}
+
 export function rowToBeat(row: BeatRow) {
   return {
     id: row.id,
