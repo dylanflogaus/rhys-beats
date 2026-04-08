@@ -30,7 +30,7 @@ async function fetchBeats() {
             </div>
             <button class="delete-btn" data-id="${beat.id}">Delete</button>
           </div>
-          <audio controls src="/uploads/${encodeURIComponent(beat.fileName)}"></audio>
+          <audio controls src="/api/beats/audio/${beat.id}"></audio>
         </article>
       `
       )

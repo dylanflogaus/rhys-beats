@@ -1,0 +1,21 @@
+# Cloudflare Pages + D1 + R2
+# 1. Create D1: npx wrangler d1 create rhys-beats
+#    Copy database_id into database_id below.
+# 2. Create R2 bucket: npx wrangler r2 bucket create rhys-beats-audio
+# 3. Apply schema: npx wrangler d1 migrations apply rhys-beats --remote
+# 4. In Cloudflare Dashboard → Workers & Pages → your project → Settings:
+#    bind the same D1 + R2 if not picked up from this file (Wrangler usually syncs on deploy).
+
+name = "rhys-beats"
+compatibility_date = "2024-11-12"
+pages_build_output_dir = "public"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "rhys-beats"
+# Replace after: npx wrangler d1 create rhys-beats
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+[[r2_buckets]]
+binding = "BEATS_BUCKET"
+bucket_name = "rhys-beats-audio"

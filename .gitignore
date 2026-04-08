@@ -3,3 +3,4 @@ uploads/
 beats.db
 npm-debug.log*
 .cursor/
+.wrangler/
