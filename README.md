@@ -51,9 +51,25 @@ If you had beats from before multi-user support, rows may have `user_id` NULL an
 
 In the dashboard for your Pages project:
 - Framework preset: none
-- Build command: leave empty
+- Build command: leave empty (or `npm clean-install` only if you need dependencies installed; **not** required for this static UI, but harmless)
 - Build output directory: `public`
-- Do not set a custom deploy command
+- **Deploy command / post-build command:** leave **empty** OR remove it entirely
+
+**Do not** set `npx wrangler deploy` here. This repo is **Pages** (`public/` + `functions/`). That command targets **Workers** and your log will show:
+
+- `Executing user deploy command: npx wrangler deploy`
+- `wrangler pages deploy should be used instead`
+- `Missing entry-point to Worker script or to assets directory`
+
+**Fix:** In Pages → **Settings** → **Builds & deployments**, clear the **Deploy command** field. Git-connected Pages publishes the build output automatically; you do not need a Wrangler deploy step after `npm install`.
+
+If you truly must deploy via Wrangler from CI (unusual for Git Pages), use:
+
+```bash
+npx wrangler pages deploy public
+```
+
+—not `wrangler deploy`.
 
 Add bindings under Pages project settings:
 - D1 binding: `DB`

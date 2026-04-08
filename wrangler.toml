@@ -1,3 +1,4 @@
+# Git-based Pages: clear any “Deploy command” that runs `wrangler deploy`. Use Git publish only, or `wrangler pages deploy public`.
 name = "rhys-beats"
 compatibility_date = "2026-04-08"
 pages_build_output_dir = "public"
