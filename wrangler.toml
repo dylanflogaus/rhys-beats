@@ -7,6 +7,9 @@
 #    Put both ids below (id = production, preview_id = preview)
 # 3. Apply schema: npx wrangler d1 migrations apply rhys-beats --remote
 # 4. Pages dashboard: bind D1 + KV if Git deploy does not read wrangler.toml
+# 5. `name` below MUST match an existing Cloudflare Pages project name (create in dashboard or:
+#      npx wrangler pages project create rhys-beats --production-branch main
+#    If your dashboard project has a different name, change `name` or pass --project-name=...
 
 name = "rhys-beats"
 compatibility_date = "2024-11-12"

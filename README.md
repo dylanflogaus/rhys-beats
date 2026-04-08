@@ -116,6 +116,27 @@ If the log says Wrangler is using **`CLOUDFLARE_API_TOKEN`** and the request to 
 
 See also: [Use Direct Upload with Continuous Integration](https://developers.cloudflare.com/pages/how-to/use-direct-upload-with-continuous-integration/) (token expectations for Pages uploads).
 
+### CI: `Project not found` / `[code: 8000007]`
+
+If the log says the request to **`/pages/projects/rhys-beats`** failed with **Project not found**, Wrangler is using the **`name`** field from `wrangler.toml` (here: **`rhys-beats`**) and **no Pages project with that exact name** exists on your account yet.
+
+**Fix (pick one):**
+
+1. **Create the project** (CLI, logged in with a token that has Pages permissions):
+
+   ```bash
+   npx wrangler pages project create rhys-beats --production-branch main
+   ```
+
+   Then run your deploy again.
+
+2. **Create in the dashboard** — **Workers & Pages** → **Create** → **Pages** → choose **Direct Upload** or connect Git, and set the **project name** to **`rhys-beats`** (must match `name` in `wrangler.toml`).
+
+3. **Use an existing project name** — If you already have a Pages project (e.g. `beat-vault`), either:
+   - change `name = "rhys-beats"` in `wrangler.toml` to that name, or
+   - set the deploy command to:  
+     `npx wrangler pages deploy public --project-name=YOUR_EXISTING_NAME`
+
 ## Project layout
 
 | Path | Role |
