@@ -3,3 +3,10 @@ uploads/
 beats.db
 npm-debug.log*
 .cursor/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
