@@ -1,5 +1,6 @@
-# Pretty URLs → actual HTML (Cloudflare Pages)
-/login    /login.html   302
-/sign-in  /login.html   302
-/register /register.html 302
-/sign-up  /register.html 302
+# 200 = rewrite (no extra HTTP redirect). Use this when Pages/SPA fallback might
+# serve index.html for /login and cause a redirect loop with client-side auth.
+/login    /login.html    200
+/sign-in  /login.html   200
+/register /register.html 200
+/sign-up  /register.html 200

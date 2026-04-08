@@ -10,7 +10,7 @@ const fetchOpts = { credentials: "same-origin" };
 async function requireAuth() {
   const response = await fetch("/api/auth/me", fetchOpts);
   if (response.status === 401) {
-    window.location.replace("/login");
+    window.location.replace("/login.html");
     return null;
   }
   if (!response.ok) {
@@ -31,7 +31,7 @@ async function fetchBeats() {
   try {
     const response = await fetch("/api/beats", fetchOpts);
     if (response.status === 401) {
-      window.location.replace("/login");
+      window.location.replace("/login.html");
       return;
     }
 
@@ -89,7 +89,7 @@ beatForm.addEventListener("submit", async (event) => {
     const data = await response.json().catch(() => ({}));
 
     if (response.status === 401) {
-      window.location.replace("/login");
+      window.location.replace("/login.html");
       return;
     }
 
@@ -122,7 +122,7 @@ beatsList.addEventListener("click", async (event) => {
       ...fetchOpts,
     });
     if (response.status === 401) {
-      window.location.replace("/login");
+      window.location.replace("/login.html");
       return;
     }
     if (!response.ok) {
@@ -140,7 +140,7 @@ logoutBtn?.addEventListener("click", async () => {
   } catch (_e) {
     // ignore
   }
-    window.location.replace("/login");
+    window.location.replace("/login.html");
 });
 
 function escapeHtml(value) {
@@ -157,6 +157,6 @@ requireAuth()
     if (user) showUser(user);
   })
   .catch(() => {
-    window.location.replace("/login");
+    window.location.replace("/login.html");
   })
   .then(() => fetchBeats());
