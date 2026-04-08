@@ -33,7 +33,13 @@ Upload, preview, and delete beats. Runs on **Cloudflare Pages** with **D1** (met
    npx wrangler kv namespace create beat-vault-audio --preview
    ```
 
-   Paste the printed ids into `wrangler.toml` as `id` and `preview_id` for the `BEATS_KV` binding.  
+   If you see **already exists**, list namespaces and copy the existing ids:
+
+   ```bash
+   npx wrangler kv namespace list
+   ```
+
+   Paste the ids into `wrangler.toml` as `id` (production) and `preview_id` (preview) for the `BEATS_KV` binding.  
    **Until both are real UUIDs** (not `REPLACE_WITH_...`), `wrangler pages deploy` will fail with **`Invalid KV namespace ID`** / **`8000022`**.
 
 3. **Schema** — apply migrations to production D1:
