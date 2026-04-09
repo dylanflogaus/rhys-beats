@@ -29,6 +29,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
       return jsonError("Beat not found.", 404);
     }
 
+    await env.DB.prepare("DELETE FROM beat_reactions WHERE beat_id = ?").bind(beatId).run();
     await env.DB.prepare("DELETE FROM beats WHERE id = ?").bind(beatId).run();
     await env.BEATS_KV.delete(row.r2_key);
 

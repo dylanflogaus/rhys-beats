@@ -12,6 +12,7 @@ export type BeatRow = {
   notes: string | null;
   file_name: string;
   mime_type: string;
+  is_public: number | null;
   created_at: string;
 };
 
@@ -36,6 +37,7 @@ export function rowToBeat(row: BeatRow) {
     notes: row.notes,
     fileName: row.file_name,
     mimeType: row.mime_type,
+    isPublic: Boolean(row.is_public),
     createdAt: row.created_at,
   };
 }

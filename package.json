@@ -7,7 +7,9 @@
     "dev": "wrangler pages dev public",
     "deploy:manual": "wrangler pages deploy public",
     "db:apply:local": "wrangler d1 migrations apply rhys-beats --local",
-    "db:apply:remote": "wrangler d1 migrations apply rhys-beats --remote"
+    "db:apply:remote": "wrangler d1 migrations apply rhys-beats --remote",
+    "db:seed:local": "wrangler d1 execute rhys-beats --local --file scripts/seed_dummy_data.sql && node scripts/seed_dummy_audio.js --local",
+    "db:seed:remote": "wrangler d1 execute rhys-beats --remote --file scripts/seed_dummy_data.sql && node scripts/seed_dummy_audio.js --remote"
   },
   "keywords": [],
   "author": "",

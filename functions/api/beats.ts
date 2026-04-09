@@ -22,7 +22,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
     try {
       const { results } = await env.DB.prepare(
         `
-        SELECT id, title, producer, bpm, beat_key, notes, file_name, mime_type, created_at
+        SELECT id, title, producer, bpm, beat_key, notes, file_name, mime_type, is_public, created_at
         FROM beats
         WHERE user_id = ?
         ORDER BY datetime(created_at) DESC
@@ -46,7 +46,9 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
       const bpmRaw = String(form.get("bpm") ?? "").trim();
       const beatKey = String(form.get("beatKey") ?? "").trim();
       const notes = String(form.get("notes") ?? "").trim();
+      const isPublicInput = String(form.get("isPublic") ?? "1").trim();
       const bpmVal = bpmRaw ? Number(bpmRaw) : null;
+      const isPublic = isPublicInput === "1" ? 1 : 0;
 
       const fileInput = form.get("beatFile");
       if (!title) {
@@ -70,9 +72,9 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
 
       const row = await env.DB.prepare(
         `
-        INSERT INTO beats (user_id, title, producer, bpm, beat_key, notes, file_name, r2_key, mime_type)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        RETURNING id, title, producer, bpm, beat_key, notes, file_name, mime_type, created_at
+        INSERT INTO beats (user_id, title, producer, bpm, beat_key, notes, file_name, r2_key, mime_type, is_public)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        RETURNING id, title, producer, bpm, beat_key, notes, file_name, mime_type, is_public, created_at
         `
       )
         .bind(
@@ -84,7 +86,8 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
           notes || null,
           safeName,
           fileKey,
-          fileInput.type
+          fileInput.type,
+          isPublic
         )
         .first<BeatRow>();
 

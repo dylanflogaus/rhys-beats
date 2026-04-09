@@ -36,15 +36,39 @@ a {
   margin-top: 1.25rem;
 }
 
+.library-subsection {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #2a3142;
+}
+
+.library-subsection h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
 form label {
   display: block;
   margin-bottom: 0.8rem;
   font-size: 0.95rem;
 }
 
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.checkbox-row input[type="checkbox"] {
+  width: auto;
+  margin-top: 0;
+}
+
 input,
 textarea,
-button {
+button,
+select {
   width: 100%;
   box-sizing: border-box;
   margin-top: 0.35rem;
@@ -121,6 +145,71 @@ button:hover {
   background: #f03e3e;
 }
 
+.reaction-row {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.reaction-btn {
+  width: auto;
+  padding: 0.45rem 0.7rem;
+  background: #2b3348;
+  border: 1px solid #42506f;
+  font-size: 0.9rem;
+}
+
+.reaction-btn span {
+  color: #d0d7e8;
+}
+
+.reaction-btn.active {
+  background: #715cff;
+  border-color: #8f7cff;
+}
+
+.discover-controls {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin: 0.9rem 0 0.7rem;
+}
+
+.tab-row {
+  display: flex;
+  gap: 0.55rem;
+}
+
+.tab-btn {
+  width: auto;
+  margin-top: 0;
+  padding: 0.45rem 0.7rem;
+  background: #2b3348;
+  border: 1px solid #42506f;
+  font-size: 0.9rem;
+}
+
+.tab-btn.active {
+  background: #715cff;
+  border-color: #8f7cff;
+}
+
+.range-filter {
+  width: auto;
+  margin-bottom: 0;
+  font-size: 0.85rem;
+  color: #a8b0c0;
+}
+
+.range-filter select {
+  width: auto;
+  min-width: 170px;
+  margin-top: 0.25rem;
+  font-size: 0.9rem;
+}
+
 audio {
   width: 100%;
   margin-top: 0.7rem;
@@ -129,6 +218,35 @@ audio {
 @media (max-width: 700px) {
   .grid {
     grid-template-columns: 1fr;
+  }
+
+  .reaction-row {
+    flex-direction: column;
+  }
+
+  .reaction-btn {
+    width: 100%;
+  }
+
+  .discover-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tab-row {
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    width: 100%;
+  }
+
+  .range-filter {
+    width: 100%;
+  }
+
+  .range-filter select {
+    width: 100%;
   }
 }
 

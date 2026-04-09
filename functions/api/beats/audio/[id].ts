@@ -22,14 +22,17 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
 
   try {
     const row = await env.DB.prepare(
-      "SELECT r2_key, mime_type, user_id FROM beats WHERE id = ?"
+      "SELECT r2_key, mime_type, user_id, is_public FROM beats WHERE id = ?"
     )
       .bind(beatId)
-      .first<{ r2_key: string; mime_type: string; user_id: number | null }>();
+      .first<{ r2_key: string; mime_type: string; user_id: number | null; is_public: number | null }>();
 
-    if (!row || row.user_id !== userId) {
+    if (!row) {
       return jsonError("Beat not found.", 404);
     }
+    const isPublic = Number(row.is_public ?? 1) === 1;
+    const canAccess = row.user_id === userId || isPublic;
+    if (!canAccess) return jsonError("Beat not found.", 404);
 
     const data = await env.BEATS_KV.get(row.r2_key, { type: "arrayBuffer" });
     if (!data) {

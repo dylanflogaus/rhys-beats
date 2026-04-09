@@ -39,7 +39,9 @@ Put those IDs into `wrangler.toml`:
 npx wrangler d1 migrations apply rhys-beats --remote
 ```
 
-4. **Accounts** — migration `0002` adds a `users` table, `user_id` on `beats`, and uses **KV** for login sessions (same `BEATS_KV` namespace; keys are prefixed `sess:`). After upgrading an existing database, run migrations again:
+4. **Accounts** — migration `0002` adds a `users` table, `user_id` on `beats`, and uses **KV** for login sessions (same `BEATS_KV` namespace; keys are prefixed `sess:`). Migration `0003` adds public beat discovery plus star/thumb reactions.
+
+After upgrading an existing database, run migrations again:
 
 ```bash
 npx wrangler d1 migrations apply rhys-beats --remote
@@ -86,6 +88,26 @@ npm run dev
 Open the local URL shown by Wrangler.
 
 - Sign up at `/register` (or `/register.html`), then use the app at `/` (sign in at `/login`).
+
+## Seed dummy data
+
+After migrations are applied (including `0003`), you can seed sample users, beats, and reactions:
+
+```bash
+npm run db:seed:local
+```
+
+For Cloudflare remote D1:
+
+```bash
+npm run db:seed:remote
+```
+
+Notes:
+- The seed is idempotent (safe to run multiple times).
+- It creates a few public beats (for Discover), one private beat (to verify filtering), and star reactions.
+- It also uploads short silent audio files into KV for seeded beat keys so playback works out of the box.
+- **Local dev:** dummy audio is written to the KV **preview** namespace (same one `wrangler pages dev` uses). **Remote:** audio is written to the production KV namespace (`--preview false`).
 
 ### Sign-in page missing or blank in production
 
