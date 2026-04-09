@@ -32,12 +32,13 @@ body {
 }
 
 .app-shell {
-  max-width: none;
+  max-width: 100%;
   margin: 0;
   padding: 1.2rem;
   display: grid;
   grid-template-columns: 210px minmax(0, 1fr);
   gap: 1rem;
+  box-sizing: border-box;
 }
 
 .sidebar {
@@ -86,16 +87,19 @@ body {
 }
 
 .sidebar-brand h1 {
-  margin: 0.15rem 0 0;
-  font-size: 1rem;
-  font-weight: 600;
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #f2f3f5;
+  line-height: 1.15;
 }
 
 .sidebar-brand .meta {
-  margin: 0;
+  margin: 0.2rem 0 0;
   text-transform: none;
   letter-spacing: 0.01em;
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   color: #8f98ad;
 }
 
@@ -185,6 +189,21 @@ body:not(.sidebar-collapsed) .sidebar-link.active .sidebar-link-text {
   mask-image: url("/icons/upload.svg");
 }
 
+@media (min-width: 981px) {
+  .mobile-nav-bar,
+  .mobile-drawer-header {
+    display: none !important;
+  }
+
+  .mobile-nav-backdrop {
+    display: none !important;
+  }
+
+  .mobile-nav-panel {
+    display: contents;
+  }
+}
+
 body.sidebar-collapsed .app-shell {
   grid-template-columns: 76px minmax(0, 1fr);
 }
@@ -245,6 +264,7 @@ body.sidebar-collapsed .sidebar-collapse-icon {
   justify-self: stretch;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 
 /* Sidebar pages: main column spans from nav to the shell edge (no extra gutter column or narrow reading width). */
@@ -252,6 +272,7 @@ body.sidebar-collapsed .sidebar-collapse-icon {
   max-width: none;
   width: 100%;
   margin: 0;
+  box-sizing: border-box;
 }
 
 .view-panel {
@@ -491,6 +512,7 @@ button[type="submit"]:hover {
   border-radius: 10px;
   padding: 0.9rem;
   background: #101521;
+  overflow-wrap: break-word;
 }
 
 /* Top row: title → artist → player → star (or edit/delete). */
@@ -1106,13 +1128,96 @@ button.discover-tag-chip:hover {
 }
 
 @media (max-width: 700px) {
+  /* Title + actions on one row; artist + player below — less vertical dead space. */
   .beat-item-top {
-    flex-direction: column;
-    align-items: stretch;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "title actions"
+      "artist artist"
+      "player player";
+    align-items: start;
+    gap: 0.28rem 0.45rem;
+  }
+
+  .beat-item-top__title {
+    grid-area: title;
+    font-size: 0.98rem;
+    line-height: 1.28;
+  }
+
+  .beat-item-top__artist {
+    grid-area: artist;
+    font-size: 0.84rem;
+    line-height: 1.35;
+  }
+
+  .beat-item-top__artist--mine {
+    font-size: 0.8rem;
+  }
+
+  .beat-item-top__player {
+    grid-area: player;
+    min-width: 0;
+    width: 100%;
+    max-width: none;
+    flex: none;
+  }
+
+  .beat-item-top .beat-card-tray,
+  .beat-item-top .beat-actions {
+    grid-area: actions;
+    margin-left: 0;
+    justify-self: end;
+    align-self: start;
+    justify-content: flex-end;
   }
 
   .beat-card-tray {
-    justify-content: flex-start;
+    justify-content: flex-end;
+  }
+
+  .beat-item-top .beat-actions {
+    flex-wrap: nowrap;
+    gap: 0.35rem;
+  }
+
+  .beat-item-top--no-actions {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "title"
+      "artist"
+      "player";
+  }
+
+  .beat-item {
+    gap: 0.42rem;
+    padding: 0.58rem 0.62rem;
+    border-radius: 8px;
+  }
+
+  .beats-list {
+    gap: 0.48rem;
+  }
+
+  .beat-item-body {
+    gap: 0.28rem;
+  }
+
+  .beat-item-body .beat-production-meta,
+  .beat-item-body .beat-description {
+    font-size: 0.84rem;
+    line-height: 1.4;
+  }
+
+  .beat-loop-btn {
+    transform: translateY(-1px);
+  }
+
+  .edit-btn,
+  .delete-btn {
+    padding: 0.38rem 0.55rem;
+    font-size: 0.82rem;
   }
 
   .grid {
@@ -1134,11 +1239,21 @@ button.discover-tag-chip:hover {
   }
 
   .tab-row {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 0.4rem;
+    padding-bottom: 0.15rem;
+    padding-left: 0.15rem;
+    padding-right: 0.15rem;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
   }
 
   .tab-btn {
-    width: 100%;
+    width: auto;
+    flex: 0 0 auto;
+    white-space: nowrap;
   }
 
   .range-filter {
@@ -1168,69 +1283,272 @@ button.discover-tag-chip:hover {
 }
 
 @media (max-width: 980px) {
+  /* No horizontal shell padding: main column uses inner padding only (avoids scrollbar). */
   .app-shell {
     grid-template-columns: 1fr;
-    padding: 0.8rem;
+    padding: 0.8rem 0 max(0.8rem, env(safe-area-inset-bottom, 0px));
   }
 
   .sidebar {
     position: static;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+  }
+
+  .sidebar-top {
+    display: none;
+  }
+
+  .sidebar-collapse-btn {
+    display: none;
+  }
+
+  .mobile-nav-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    margin: -0.8rem 0 0.65rem;
+    padding: max(0.5rem, env(safe-area-inset-top, 0px)) 0.8rem 0.55rem;
+    background: rgba(15, 17, 23, 0.97);
+    border-bottom: 1px solid rgba(47, 55, 75, 0.88);
+    box-sizing: border-box;
+  }
+
+  .mobile-nav-brand {
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #f2f3f5;
+    line-height: 1.2;
+    min-width: 0;
+    text-align: left;
+  }
+
+  .mobile-menu-toggle {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.65rem;
+    height: 2.65rem;
+    margin: 0;
+    padding: 0;
+    border: 1px solid #2f374b;
+    border-radius: 8px;
+    background: #151b29;
+    color: #d4ddf2;
+    cursor: pointer;
+    transition:
+      background-color 140ms ease,
+      border-color 140ms ease;
+  }
+
+  .mobile-menu-toggle:hover {
+    background: #1e273a;
+  }
+
+  .mobile-menu-bars {
+    position: relative;
+    display: block;
+    width: 1.1rem;
+    height: 1px;
+    background: currentColor;
+    border-radius: 1px;
+  }
+
+  .mobile-menu-bars::before,
+  .mobile-menu-bars::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: currentColor;
+    border-radius: 1px;
+    transition:
+      transform 0.2s ease,
+      top 0.2s ease;
+  }
+
+  .mobile-menu-bars::before {
+    top: -5px;
+  }
+
+  .mobile-menu-bars::after {
+    top: 5px;
+  }
+
+  .mobile-menu-toggle[aria-expanded="true"] .mobile-menu-bars {
+    background: transparent;
+  }
+
+  .mobile-menu-toggle[aria-expanded="true"] .mobile-menu-bars::before {
+    top: 0;
+    transform: rotate(45deg);
+  }
+
+  .mobile-menu-toggle[aria-expanded="true"] .mobile-menu-bars::after {
+    top: 0;
+    transform: rotate(-45deg);
+  }
+
+  .mobile-nav-panel {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100dvh;
+    max-height: 100dvh;
+    width: min(17.5rem, 88vw);
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: #131821;
+    border-right: 1px solid #2f374b;
+    z-index: 70;
+    transform: translate3d(-100%, 0, 0);
+    transition: transform 0.22s ease;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  body.mobile-menu-open .mobile-nav-panel {
+    transform: translate3d(0, 0, 0);
+  }
+
+  .mobile-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+    flex-shrink: 0;
+    padding: 0.65rem 1rem 0.55rem;
+    border-bottom: 1px solid rgba(47, 55, 75, 0.85);
+  }
+
+  .mobile-drawer-title {
+    margin: 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #8f98ad;
+  }
+
+  .mobile-drawer-close {
+    width: auto;
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+    margin: 0;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #b8c0d5;
+    font-size: 1.65rem;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+      color 120ms ease,
+      background-color 120ms ease;
+  }
+
+  .mobile-drawer-close:hover {
+    color: #f2f3f5;
+    background: #1e273a;
   }
 
   .sidebar-nav {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    margin: 0;
+    padding: 0.65rem 0.75rem 1rem;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sidebar-link {
+    flex: 0 0 auto;
+    border-radius: 8px;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.94rem;
+    font-weight: 500;
+    background: transparent;
+    border: 1px solid transparent;
+    gap: 0.5rem;
+  }
+
+  .sidebar-link:hover {
+    background: #1a2233;
+    border-color: transparent;
+  }
+
+  .sidebar-link.active {
+    background: #1b2233;
+    border-color: rgba(143, 74, 82, 0.35);
+    color: #f2f3f5;
+  }
+
+  .sidebar-link.active .sidebar-link-icon {
+    background-color: var(--accent);
+  }
+
+  .mobile-nav-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 65;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.48);
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  body.mobile-menu-open .mobile-nav-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .mobile-nav-backdrop[hidden] {
+    display: none !important;
+  }
+
+  body.mobile-menu-open {
+    overflow: hidden;
   }
 
   body.sidebar-collapsed .app-shell {
     grid-template-columns: 1fr;
   }
 
-  body.sidebar-collapsed .sidebar-brand {
-    display: block;
-  }
-
-  body.sidebar-collapsed .sidebar-brand h1,
-  body.sidebar-collapsed .sidebar-brand .meta,
-  body.sidebar-collapsed .sidebar-link-text {
-    display: revert;
-  }
-
-  body.sidebar-collapsed .sidebar-top {
-    justify-content: space-between;
-    align-items: flex-start;
-  }
-
-  body.sidebar-collapsed .sidebar-collapse-btn {
-    padding: 0.4rem 0.45rem;
-    min-width: 2rem;
-    min-height: 2rem;
-    border-radius: 7px;
-    display: inline-flex;
-  }
-
-  body.sidebar-collapsed .sidebar-collapse-icon {
-    width: 1rem;
-    height: 1rem;
-  }
-
-  body.sidebar-collapsed .sidebar-nav {
-    margin-top: 0.9rem;
-  }
-
-  body.sidebar-collapsed .sidebar-link {
-    justify-content: flex-start;
-    padding: 0.45rem 0.65rem;
-  }
-
-  body.sidebar-collapsed .sidebar-link-icon {
-    width: 1.05rem;
-    height: 1.05rem;
-  }
-
   .main-content {
     grid-column: auto;
     width: 100%;
     justify-self: stretch;
+  }
+
+  .app-shell > .main-content.container {
+    padding-left: 0.8rem;
+    padding-right: 0.8rem;
   }
 }
 
@@ -1259,6 +1577,8 @@ button.discover-tag-chip:hover {
   color: #6f7a8f;
   font-size: 0.78rem;
   letter-spacing: 0.01em;
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 
 .topbar .actions {
@@ -1347,5 +1667,80 @@ button.discover-tag-chip:hover {
 @media (max-width: 850px) {
   .profile-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Narrow screens: tighter shell; primary nav is hamburger + drawer (see max-width:980px). */
+@media (max-width: 700px) {
+  .app-shell {
+    padding: 0.5rem 0 max(0.85rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  .container {
+    padding: 1.15rem 0.5rem 2rem;
+  }
+
+  .app-shell > .main-content.container {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .with-sidebar .topbar {
+    margin-top: -1.15rem;
+  }
+
+  .header h2 {
+    font-size: 1.35rem;
+    line-height: 1.25;
+  }
+
+  .header p {
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+
+  .card {
+    padding: 0.85rem 0.75rem;
+    border-radius: 10px;
+  }
+
+  .mobile-nav-bar {
+    margin: -0.5rem 0 0.55rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .view-panel[data-page="discover"] > .card {
+    margin-top: 0.4rem;
+  }
+
+  .beat-tag-chip {
+    font-size: 0.76rem;
+    padding: 0.16rem 0.42rem;
+  }
+
+  .title-roll-row {
+    flex-wrap: wrap;
+  }
+
+  .title-roll-row input {
+    flex: 1 1 12rem;
+    min-width: 0;
+  }
+
+  .discover-tag-filters {
+    padding: 0.75rem 0.65rem;
+  }
+
+  .beat-item-top .beat-card-tray--compact {
+    margin-left: 0;
+    width: auto;
+    max-width: 100%;
+    justify-content: flex-end;
+  }
+
+  .beat-item-top__artist {
+    max-width: 100%;
+    white-space: normal;
   }
 }

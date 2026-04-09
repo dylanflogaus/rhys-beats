@@ -94,7 +94,7 @@ function renderProfileBeat(beat) {
 
   return `
     <article class="beat-item" data-beat-id="${beat.id}" data-starred="${beat.isStarred ? "1" : "0"}">
-      <header class="beat-item-top">
+      <header class="beat-item-top${tray ? "" : " beat-item-top--no-actions"}">
         ${beatTopTitleHtml(beat)}
         ${artistLine}
         <div class="beat-item-top__player">

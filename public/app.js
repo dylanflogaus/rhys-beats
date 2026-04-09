@@ -28,6 +28,9 @@ const autoTagsEditor = document.getElementById("autoTagsEditor");
 const sidebarLinks = Array.from(document.querySelectorAll(".sidebar-link[data-page]"));
 const viewPanels = Array.from(document.querySelectorAll(".view-panel[data-page]"));
 const sidebarCollapseBtn = document.getElementById("sidebarCollapseBtn");
+const mobileMenuToggle = document.getElementById("mobileMenuToggle");
+const mobileMenuClose = document.getElementById("mobileMenuClose");
+const mobileNavBackdrop = document.getElementById("mobileNavBackdrop");
 const pageHeaderTitle = document.getElementById("pageHeaderTitle");
 const pageHeaderSubtitle = document.getElementById("pageHeaderSubtitle");
 let currentAuthUser = null;
@@ -167,7 +170,7 @@ function showUser(user) {
   if (!userBar || !userLabel) return;
   const name = String(user.username ?? "").trim();
   userLabel.innerHTML = name
-    ? `Signed in as <a class="profile-link" href="/index.html?u=${encodeURIComponent(name)}#profile">${escapeHtml(name)}</a>`
+    ? `Signed in as <a class="profile-link" href="#profile">${escapeHtml(name)}</a>`
     : "Signed in as —";
   userBar.hidden = false;
   currentAuthUser = user;
@@ -203,6 +206,68 @@ function getHashPage() {
   return window.location.hash.replace(/^#/, "").trim().toLowerCase();
 }
 
+function isMobileNavViewport() {
+  return window.matchMedia("(max-width: 980px)").matches;
+}
+
+function closeMobileMenu() {
+  document.body.classList.remove("mobile-menu-open");
+  if (mobileMenuToggle) {
+    mobileMenuToggle.setAttribute("aria-expanded", "false");
+    mobileMenuToggle.setAttribute("aria-label", "Open menu");
+  }
+  if (mobileNavBackdrop) {
+    mobileNavBackdrop.hidden = true;
+  }
+}
+
+function openMobileMenu() {
+  if (!isMobileNavViewport()) return;
+  document.body.classList.add("mobile-menu-open");
+  if (mobileMenuToggle) {
+    mobileMenuToggle.setAttribute("aria-expanded", "true");
+    mobileMenuToggle.setAttribute("aria-label", "Close menu");
+  }
+  if (mobileNavBackdrop) {
+    mobileNavBackdrop.hidden = false;
+  }
+}
+
+function toggleMobileMenu() {
+  if (document.body.classList.contains("mobile-menu-open")) {
+    closeMobileMenu();
+  } else {
+    openMobileMenu();
+  }
+}
+
+function initMobileMenu() {
+  if (!mobileMenuToggle || !mobileNavBackdrop) return;
+
+  mobileMenuToggle.addEventListener("click", () => {
+    toggleMobileMenu();
+  });
+
+  mobileMenuClose?.addEventListener("click", () => {
+    closeMobileMenu();
+  });
+
+  mobileNavBackdrop.addEventListener("click", () => {
+    closeMobileMenu();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || !document.body.classList.contains("mobile-menu-open")) return;
+    event.preventDefault();
+    closeMobileMenu();
+    mobileMenuToggle.focus();
+  });
+
+  window.addEventListener("resize", () => {
+    if (!isMobileNavViewport()) closeMobileMenu();
+  });
+}
+
 function setActivePage(page, { updateHash = true } = {}) {
   if (!viewPanels.length || !sidebarLinks.length) return;
   const fallbackPage = viewPanels[0]?.dataset.page || "discover";
@@ -233,6 +298,7 @@ function setActivePage(page, { updateHash = true } = {}) {
   if (nextPage === "profile" && window.BeatVaultProfile) {
     void window.BeatVaultProfile.activate(currentAuthUser);
   }
+  closeMobileMenu();
 }
 
 function initSidebarNavigation() {
@@ -1326,6 +1392,13 @@ libraryViewTabs?.addEventListener("click", (event) => {
 document.addEventListener("play", handleBeatAudioPlay, true);
 document.addEventListener("pause", handleBeatAudioPause, true);
 
+userBar?.addEventListener("click", (event) => {
+  const link = event.target.closest("a.profile-link");
+  if (!link || !userLabel?.contains(link)) return;
+  event.preventDefault();
+  setActivePage("profile", { updateHash: true });
+});
+
 logoutBtn?.addEventListener("click", async () => {
   try {
     await fetch("/api/auth/logout", { method: "POST", ...fetchOpts });
@@ -1354,6 +1427,7 @@ requireAuth()
     if (titleSuggestion) rollBeatTitle(false);
     setActiveSortTab(discoverState.sort);
     setActiveLibraryView(libraryView);
+    initMobileMenu();
     initSidebarNavigation();
     initSidebarCollapse();
   })

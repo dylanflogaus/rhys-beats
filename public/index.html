@@ -3,7 +3,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Beat Vault</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
@@ -21,8 +21,8 @@
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-top">
           <div class="sidebar-brand">
-            <p class="meta">Beat Vault</p>
-            <h1>Creator Hub</h1>
+            <h1>Beat Vault</h1>
+            <p class="meta">Creator Hub</p>
           </div>
           <button
             type="button"
@@ -36,28 +36,50 @@
             <span class="sidebar-collapse-icon" aria-hidden="true"></span>
           </button>
         </div>
-        <nav class="sidebar-nav">
-          <a href="#discover" class="sidebar-link active" data-page="discover" aria-label="Discover">
-            <span class="sidebar-link-icon icon-discover" aria-hidden="true"></span>
-            <span class="sidebar-link-text">Discover</span>
-          </a>
-          <a href="#library" class="sidebar-link" data-page="library" aria-label="Library">
-            <span class="sidebar-link-icon icon-library" aria-hidden="true"></span>
-            <span class="sidebar-link-text">Library</span>
-          </a>
-          <a href="#profile" class="sidebar-link" data-page="profile" aria-label="Profile">
-            <span class="sidebar-link-icon icon-profile" aria-hidden="true"></span>
-            <span class="sidebar-link-text">Profile</span>
-          </a>
-          <a href="#studio" class="sidebar-link" data-page="studio" aria-label="Studio">
-            <span class="sidebar-link-icon icon-studio" aria-hidden="true"></span>
-            <span class="sidebar-link-text">Studio</span>
-          </a>
-          <a href="#upload" class="sidebar-link" data-page="upload" aria-label="Upload">
-            <span class="sidebar-link-icon icon-upload" aria-hidden="true"></span>
-            <span class="sidebar-link-text">Upload</span>
-          </a>
-        </nav>
+        <header class="mobile-nav-bar">
+          <span class="mobile-nav-brand">Beat Vault</span>
+          <button
+            type="button"
+            class="mobile-menu-toggle"
+            id="mobileMenuToggle"
+            aria-controls="mobileNavPanel"
+            aria-expanded="false"
+            aria-label="Open menu"
+          >
+            <span class="mobile-menu-bars" aria-hidden="true"></span>
+          </button>
+        </header>
+        <div class="mobile-nav-panel" id="mobileNavPanel">
+          <div class="mobile-drawer-header">
+            <p class="mobile-drawer-title">Menu</p>
+            <button type="button" class="mobile-drawer-close" id="mobileMenuClose" aria-label="Close menu">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <nav class="sidebar-nav" id="sidebarNav">
+            <a href="#discover" class="sidebar-link active" data-page="discover" aria-label="Discover">
+              <span class="sidebar-link-icon icon-discover" aria-hidden="true"></span>
+              <span class="sidebar-link-text">Discover</span>
+            </a>
+            <a href="#library" class="sidebar-link" data-page="library" aria-label="Library">
+              <span class="sidebar-link-icon icon-library" aria-hidden="true"></span>
+              <span class="sidebar-link-text">Library</span>
+            </a>
+            <a href="#profile" class="sidebar-link" data-page="profile" aria-label="Profile">
+              <span class="sidebar-link-icon icon-profile" aria-hidden="true"></span>
+              <span class="sidebar-link-text">Profile</span>
+            </a>
+            <a href="#studio" class="sidebar-link" data-page="studio" aria-label="Studio">
+              <span class="sidebar-link-icon icon-studio" aria-hidden="true"></span>
+              <span class="sidebar-link-text">Studio</span>
+            </a>
+            <a href="#upload" class="sidebar-link" data-page="upload" aria-label="Upload">
+              <span class="sidebar-link-icon icon-upload" aria-hidden="true"></span>
+              <span class="sidebar-link-text">Upload</span>
+            </a>
+          </nav>
+        </div>
+        <button type="button" class="mobile-nav-backdrop" id="mobileNavBackdrop" aria-label="Close menu" tabindex="-1" hidden></button>
       </aside>
 
       <section class="container main-content">
