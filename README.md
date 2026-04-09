@@ -77,6 +77,18 @@ Add bindings under Pages project settings:
 - D1 binding: `DB`
 - KV binding: `BEATS_KV`
 
+**Production data must use the same resources as `wrangler.toml`.** If the dashboard shows a different **D1 database UUID** or **KV namespace id** than in this repo, then `npm run db:seed:remote` updates one copy while your live site reads another (empty app, missing audio, etc.). Open **Workers & Pages → your project → Settings → Functions → D1 database bindings** and confirm the bound database id matches `database_id` in `wrangler.toml`. Do the same for KV: production should use the namespace whose id matches `id` (not `preview_id`).
+
+### Production vs preview deployments (Git)
+
+Pages only auto-promotes **one branch** to **Production**. Pushes to other branches (and many PR builds) show as **Preview** only; your **custom domain / production `*.pages.dev` URL** keeps serving the last **production** deployment until you change that.
+
+1. **Check the production branch:** **Workers & Pages** → your project → **Settings** → **Builds & deployments** → find **Production branch** (e.g. `main`). It must match the branch you push to from GitHub.
+2. **Promote a one-off build:** **Deployments** → open the successful deployment you want → **Manage deployment** (or **⋯**) → **Promote to production** (wording may vary slightly). That makes that build what production serves.
+3. **After fixing the branch:** push a new commit to the production branch so production tracks Git again.
+
+If latest GitHub builds are always **Preview**, your pushes are almost certainly not on the configured production branch, or the project was connected to a fork/branch you are not using.
+
 ## Local development
 
 ```bash
@@ -103,7 +115,20 @@ For Cloudflare remote D1:
 npm run db:seed:remote
 ```
 
+**Where seeded content appears in the UI:** dummy users and beats are **other people's** tracks. They show under **Discover** (and in **Beats I've saved** after you star one). They do **not** appear under **My Beats** unless you uploaded them yourself.
+
+**If Discover or “Beats I've saved” never appears in production:** (1) Open **View Page Source** on `/` and search for `beat-vault:index` — if it’s missing, Pages is not deploying this repo’s `public/index.html` (wrong build output dir, branch, or project). (2) Disable **ad blockers** and retry (some lists hide elements whose `id` contains `popular`). This app uses neutral ids (`discoverBeatsList`, etc.). (3) **Purge cache** / hard-refresh after deploy.
+
+**Verify the CLI is writing to the same D1 your site uses:**
+
+```bash
+npm run db:check:remote
+```
+
+You should see non-zero `users` / `beats` counts and rows for `demo_drummer`, `sampleproducer`, `beatmaker77`. If counts are zero here but seed “succeeded”, your Pages project is almost certainly bound to a **different** D1 database than `wrangler.toml`’s `database_id` (update the dashboard binding or change `database_id` to match production, then re-run migrations + seed).
+
 Notes:
+- **Remote D1:** do not use `BEGIN TRANSACTION` / `COMMIT` in SQL passed to `wrangler d1 execute --remote`; Cloudflare requires implicit transactions and will error if those appear. (This repo’s seed file follows that rule.)
 - The seed is idempotent (safe to run multiple times).
 - It creates a few public beats (for Discover), one private beat (to verify filtering), and star reactions.
 - It also uploads short silent audio files into KV for seeded beat keys so playback works out of the box.

@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- beat-vault:index template includes discover + saved-library (deploy sanity check: View Source) -->
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -65,31 +66,31 @@
         <h2>My Beats</h2>
         <div id="beatsList" class="beats-list"></div>
 
-        <div class="library-subsection">
+        <div class="library-subsection" id="savedLibrarySection">
           <h3>Beats I've saved</h3>
           <p class="meta">Public beats from other creators you've starred. They stay here until you unstar them.</p>
           <div id="savedBeatsList" class="beats-list"></div>
         </div>
       </section>
 
-      <section class="card">
-        <h2>Popular Beats</h2>
+      <section class="card" id="discoverSection">
+        <h2>Discover</h2>
         <p class="meta">Browse public beats from other creators and star your favorites.</p>
         <div class="discover-controls">
-          <div class="tab-row" id="popularSortTabs">
+          <div class="tab-row" id="discoverSortTabs">
             <button type="button" class="tab-btn active" data-sort="most_starred">Most Starred</button>
             <button type="button" class="tab-btn" data-sort="newest">Newest</button>
           </div>
           <label class="range-filter">
             Time range
-            <select id="popularRangeSelect">
+            <select id="discoverRangeSelect">
               <option value="week" selected>Top this week</option>
               <option value="month">Top this month</option>
               <option value="all">All time</option>
             </select>
           </label>
         </div>
-        <div id="popularBeatsList" class="beats-list"></div>
+        <div id="discoverBeatsList" class="beats-list"></div>
       </section>
     </main>
 

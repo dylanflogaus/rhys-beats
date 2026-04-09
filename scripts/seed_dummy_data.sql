@@ -1,5 +1,3 @@
-BEGIN TRANSACTION;
-
 INSERT OR IGNORE INTO users (username, password_hash, salt)
 VALUES
   ('demo_drummer', 'seeded_hash_demo_drummer', 'seeded_salt_demo_drummer'),
@@ -185,5 +183,3 @@ WHERE r2_key IN (
   'seed-neon-steps',
   'seed-private-lab-session'
 );
-
-COMMIT;

@@ -1,9 +1,9 @@
 const beatForm = document.getElementById("beatForm");
 const beatsList = document.getElementById("beatsList");
-const popularBeatsList = document.getElementById("popularBeatsList");
+const discoverBeatsList = document.getElementById("discoverBeatsList");
 const savedBeatsList = document.getElementById("savedBeatsList");
-const popularSortTabs = document.getElementById("popularSortTabs");
-const popularRangeSelect = document.getElementById("popularRangeSelect");
+const discoverSortTabs = document.getElementById("discoverSortTabs");
+const discoverRangeSelect = document.getElementById("discoverRangeSelect");
 const formMessage = document.getElementById("formMessage");
 const userBar = document.getElementById("userBar");
 const userLabel = document.getElementById("userLabel");
@@ -40,6 +40,7 @@ function renderBeatMeta(beat) {
 }
 
 async function fetchBeats() {
+  if (!beatsList) return;
   beatsList.innerHTML = "<p>Loading beats...</p>";
 
   try {
@@ -90,7 +91,7 @@ function reactionButton(label, reactionType, myReaction, count) {
   </button>`;
 }
 
-function renderPopularBeat(beat) {
+function renderDiscoverBeat(beat) {
   return `
     <article class="beat-item" data-beat-id="${beat.id}" data-starred="${beat.isStarred ? "1" : "0"}">
       <div class="beat-top">
@@ -128,9 +129,9 @@ function renderStarredBeat(beat) {
   `;
 }
 
-async function fetchPopularBeats() {
-  if (!popularBeatsList) return;
-  popularBeatsList.innerHTML = "<p>Loading popular beats...</p>";
+async function fetchDiscoverBeats() {
+  if (!discoverBeatsList) return;
+  discoverBeatsList.innerHTML = "<p>Loading community beats...</p>";
 
   try {
     const query = new URLSearchParams({
@@ -144,16 +145,17 @@ async function fetchPopularBeats() {
     }
     const beats = await response.json();
     if (beats.error) {
-      popularBeatsList.innerHTML = `<p>${escapeHtml(beats.error)}</p>`;
+      discoverBeatsList.innerHTML = `<p>${escapeHtml(beats.error)}</p>`;
       return;
     }
     if (!beats.length) {
-      popularBeatsList.innerHTML = "<p>No public beats yet. Be the first to share one.</p>";
+      discoverBeatsList.innerHTML =
+        "<p>No public beats from other creators yet. Try <strong>All time</strong> in the time range, or widen filters.</p>";
       return;
     }
-    popularBeatsList.innerHTML = beats.map(renderPopularBeat).join("");
+    discoverBeatsList.innerHTML = beats.map(renderDiscoverBeat).join("");
   } catch (_error) {
-    popularBeatsList.innerHTML = "<p>Failed to load popular beats.</p>";
+    discoverBeatsList.innerHTML = "<p>Failed to load Discover.</p>";
   }
 }
 
@@ -174,7 +176,7 @@ async function fetchSavedBeats() {
     }
     if (!beats.length) {
       savedBeatsList.innerHTML =
-        "<p>No saved beats yet. Star something in <strong>Popular Beats</strong> below and it will show up here.</p>";
+        "<p>No saved beats yet. Star something in <strong>Discover</strong> below and it will show up here.</p>";
       return;
     }
     savedBeatsList.innerHTML = beats.map(renderStarredBeat).join("");
@@ -184,13 +186,13 @@ async function fetchSavedBeats() {
 }
 
 function setActiveSortTab(sort) {
-  const buttons = popularSortTabs?.querySelectorAll(".tab-btn") ?? [];
+  const buttons = discoverSortTabs?.querySelectorAll(".tab-btn") ?? [];
   buttons.forEach((button) => {
     button.classList.toggle("active", button.dataset.sort === sort);
   });
 }
 
-beatForm.addEventListener("submit", async (event) => {
+beatForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   formMessage.textContent = "Saving...";
   formMessage.classList.remove("error");
@@ -220,14 +222,14 @@ beatForm.addEventListener("submit", async (event) => {
     beatForm.reset();
     formMessage.textContent = "Beat saved.";
     await fetchBeats();
-    await Promise.all([fetchPopularBeats(), fetchSavedBeats()]);
+    await Promise.all([fetchDiscoverBeats(), fetchSavedBeats()]);
   } catch (error) {
     formMessage.textContent = error.message;
     formMessage.classList.add("error");
   }
 });
 
-beatsList.addEventListener("click", async (event) => {
+beatsList?.addEventListener("click", async (event) => {
   const button = event.target.closest(".delete-btn");
   if (!button) return;
 
@@ -250,7 +252,7 @@ beatsList.addEventListener("click", async (event) => {
       throw new Error("Delete failed.");
     }
     await fetchBeats();
-    await Promise.all([fetchPopularBeats(), fetchSavedBeats()]);
+    await Promise.all([fetchDiscoverBeats(), fetchSavedBeats()]);
   } catch (_error) {
     alert("Failed to delete beat.");
   }
@@ -276,13 +278,13 @@ async function toggleStarForBeat(item) {
       const data = await response.json().catch(() => ({}));
       throw new Error(data.error || "Could not update star.");
     }
-    await Promise.all([fetchPopularBeats(), fetchSavedBeats()]);
+    await Promise.all([fetchDiscoverBeats(), fetchSavedBeats()]);
   } catch (error) {
     alert(error.message || "Could not update star.");
   }
 }
 
-popularBeatsList?.addEventListener("click", async (event) => {
+discoverBeatsList?.addEventListener("click", async (event) => {
   const button = event.target.closest(".reaction-btn");
   if (!button) return;
   const item = button.closest("[data-beat-id]");
@@ -298,21 +300,21 @@ savedBeatsList?.addEventListener("click", async (event) => {
   await toggleStarForBeat(item);
 });
 
-popularSortTabs?.addEventListener("click", async (event) => {
+discoverSortTabs?.addEventListener("click", async (event) => {
   const button = event.target.closest(".tab-btn");
   if (!button) return;
   const nextSort = button.dataset.sort;
   if (!nextSort || nextSort === discoverState.sort) return;
   discoverState.sort = nextSort;
   setActiveSortTab(nextSort);
-  await fetchPopularBeats();
+  await fetchDiscoverBeats();
 });
 
-popularRangeSelect?.addEventListener("change", async () => {
-  const nextRange = popularRangeSelect.value;
+discoverRangeSelect?.addEventListener("change", async () => {
+  const nextRange = discoverRangeSelect.value;
   if (nextRange === discoverState.range) return;
   discoverState.range = nextRange;
-  await fetchPopularBeats();
+  await fetchDiscoverBeats();
 });
 
 logoutBtn?.addEventListener("click", async () => {
@@ -341,4 +343,4 @@ requireAuth()
   .catch(() => {
     window.location.replace("/login.html");
   })
-  .then(() => Promise.all([fetchBeats(), fetchPopularBeats(), fetchSavedBeats()]));
+  .then(() => Promise.all([fetchBeats(), fetchDiscoverBeats(), fetchSavedBeats()]));
