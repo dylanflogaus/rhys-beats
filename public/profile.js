@@ -37,6 +37,15 @@ function renderBeatMeta(beat) {
     .join(" | ");
 }
 
+function renderBeatTags(beat) {
+  if (!Array.isArray(beat.tags) || !beat.tags.length) return "";
+  const chips = beat.tags
+    .slice(0, 8)
+    .map((tag) => `<span>#${escapeHtml(String(tag))}</span>`)
+    .join(" ");
+  return `<p class="meta">${chips}</p>`;
+}
+
 function reactionButton(label, reactionType, myReaction, count) {
   const activeClass = myReaction ? "reaction-btn active" : "reaction-btn";
   return `<button type="button" class="${activeClass}" data-reaction="${reactionType}">
@@ -65,6 +74,7 @@ function renderProfileBeat(beat) {
           <h3 class="beat-title">${escapeHtml(beat.title)}</h3>
           ${renderBeatMeta(beat) ? `<p class="meta">${renderBeatMeta(beat)}</p>` : ""}
           ${beat.notes ? `<p class="meta">${escapeHtml(beat.notes)}</p>` : ""}
+          ${renderBeatTags(beat)}
           <p class="meta">${beat.isPublic ? "Public beat" : "Private beat"}</p>
         </div>
       </div>

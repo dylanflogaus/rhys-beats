@@ -1,6 +1,6 @@
 import type { PagesFunction } from "@cloudflare/workers-types";
 import { getSessionUserId } from "../../lib/auth";
-import { type Env, getErrorMessage, jsonError } from "../../lib/shared";
+import { type Env, getErrorMessage, hasBeatsTagsColumn, jsonError, parseStoredTags } from "../../lib/shared";
 
 type StarredRow = {
   id: number;
@@ -9,6 +9,7 @@ type StarredRow = {
   bpm: number | null;
   beat_key: string | null;
   notes: string | null;
+  tags: string | null;
   mime_type: string;
   created_at: string;
   username: string;
@@ -34,6 +35,8 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
   }
 
   try {
+    const hasTagsColumn = await hasBeatsTagsColumn(env.DB);
+    const tagsSelect = hasTagsColumn ? "b.tags AS tags" : "NULL AS tags";
     const { results } = await env.DB.prepare(
       `
       SELECT
@@ -43,6 +46,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
         b.bpm,
         b.beat_key,
         b.notes,
+        ${tagsSelect},
         b.mime_type,
         b.created_at,
         u.username,
@@ -73,6 +77,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
         bpm: row.bpm,
         beatKey: row.beat_key,
         notes: row.notes,
+        tags: parseStoredTags(row.tags),
         mimeType: row.mime_type,
         createdAt: row.created_at,
         username: row.username,

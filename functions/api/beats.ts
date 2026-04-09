@@ -5,8 +5,11 @@ import {
   type Env,
   MAX_FILE_SIZE_BYTES,
   getErrorMessage,
+  hasBeatsTagsColumn,
   jsonError,
+  parseTagsInput,
   rowToBeat,
+  stringifyTags,
 } from "../lib/shared";
 
 export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
@@ -20,9 +23,11 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
 
   if (request.method === "GET") {
     try {
+      const hasTagsColumn = await hasBeatsTagsColumn(env.DB);
+      const tagsSelect = hasTagsColumn ? "tags" : "NULL AS tags";
       const { results } = await env.DB.prepare(
         `
-        SELECT id, title, producer, bpm, beat_key, notes, file_name, mime_type, is_public, created_at
+        SELECT id, title, producer, bpm, beat_key, notes, ${tagsSelect}, file_name, mime_type, is_public, created_at
         FROM beats
         WHERE user_id = ?
         ORDER BY datetime(created_at) DESC
@@ -46,9 +51,11 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
       const bpmRaw = String(form.get("bpm") ?? "").trim();
       const beatKey = String(form.get("beatKey") ?? "").trim();
       const notes = String(form.get("notes") ?? "").trim();
+      const autoTagsRaw = String(form.get("autoTags") ?? "").trim();
       const isPublicInput = String(form.get("isPublic") ?? "1").trim();
       const bpmVal = bpmRaw ? Number(bpmRaw) : null;
       const isPublic = isPublicInput === "1" ? 1 : 0;
+      const autoTags = parseTagsInput(autoTagsRaw);
 
       const fileInput = form.get("beatFile");
       if (!title) {
@@ -70,26 +77,51 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
         metadata: { mimeType: fileInput.type },
       });
 
-      const row = await env.DB.prepare(
-        `
-        INSERT INTO beats (user_id, title, producer, bpm, beat_key, notes, file_name, r2_key, mime_type, is_public)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        RETURNING id, title, producer, bpm, beat_key, notes, file_name, mime_type, is_public, created_at
-        `
-      )
-        .bind(
-          userId,
-          title,
-          producer || null,
-          bpmVal !== null && Number.isFinite(bpmVal) ? bpmVal : null,
-          beatKey || null,
-          notes || null,
-          safeName,
-          fileKey,
-          fileInput.type,
-          isPublic
-        )
-        .first<BeatRow>();
+      const hasTagsColumn = await hasBeatsTagsColumn(env.DB);
+      const row = hasTagsColumn
+        ? await env.DB
+            .prepare(
+              `
+              INSERT INTO beats (user_id, title, producer, bpm, beat_key, notes, tags, file_name, r2_key, mime_type, is_public)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+              RETURNING id, title, producer, bpm, beat_key, notes, tags, file_name, mime_type, is_public, created_at
+              `
+            )
+            .bind(
+              userId,
+              title,
+              producer || null,
+              bpmVal !== null && Number.isFinite(bpmVal) ? bpmVal : null,
+              beatKey || null,
+              notes || null,
+              stringifyTags(autoTags),
+              safeName,
+              fileKey,
+              fileInput.type,
+              isPublic
+            )
+            .first<BeatRow>()
+        : await env.DB
+            .prepare(
+              `
+              INSERT INTO beats (user_id, title, producer, bpm, beat_key, notes, file_name, r2_key, mime_type, is_public)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+              RETURNING id, title, producer, bpm, beat_key, notes, NULL AS tags, file_name, mime_type, is_public, created_at
+              `
+            )
+            .bind(
+              userId,
+              title,
+              producer || null,
+              bpmVal !== null && Number.isFinite(bpmVal) ? bpmVal : null,
+              beatKey || null,
+              notes || null,
+              safeName,
+              fileKey,
+              fileInput.type,
+              isPublic
+            )
+            .first<BeatRow>();
 
       if (!row) {
         return jsonError("Failed to save beat.", 500);

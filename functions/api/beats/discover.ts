@@ -1,6 +1,6 @@
 import type { PagesFunction } from "@cloudflare/workers-types";
 import { getSessionUserId } from "../../lib/auth";
-import { type Env, getErrorMessage, jsonError } from "../../lib/shared";
+import { type Env, getErrorMessage, hasBeatsTagsColumn, jsonError, parseStoredTags } from "../../lib/shared";
 
 type DiscoverRow = {
   id: number;
@@ -9,6 +9,7 @@ type DiscoverRow = {
   bpm: number | null;
   beat_key: string | null;
   notes: string | null;
+  tags: string | null;
   mime_type: string;
   created_at: string;
   username: string;
@@ -45,6 +46,8 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
 
   try {
     const url = new URL(request.url);
+    const hasTagsColumn = await hasBeatsTagsColumn(env.DB);
+    const tagsSelect = hasTagsColumn ? "b.tags AS tags" : "NULL AS tags";
     const sort = parseSort(url.searchParams.get("sort"));
     const range = parseRange(url.searchParams.get("range"));
     const rangeFilter =
@@ -67,6 +70,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
         b.bpm,
         b.beat_key,
         b.notes,
+        ${tagsSelect},
         b.mime_type,
         b.created_at,
         u.username,
@@ -98,6 +102,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
           bpm: row.bpm,
           beatKey: row.beat_key,
           notes: row.notes,
+          tags: parseStoredTags(row.tags),
           mimeType: row.mime_type,
           createdAt: row.created_at,
           username: row.username,

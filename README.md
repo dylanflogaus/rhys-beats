@@ -39,7 +39,7 @@ Put those IDs into `wrangler.toml`:
 npx wrangler d1 migrations apply rhys-beats --remote
 ```
 
-4. **Accounts** — migration `0002` adds a `users` table, `user_id` on `beats`, and uses **KV** for login sessions (same `BEATS_KV` namespace; keys are prefixed `sess:`). Migration `0003` adds public beat discovery plus star/thumb reactions.
+4. **Accounts** — migration `0002` adds a `users` table, `user_id` on `beats`, and uses **KV** for login sessions (same `BEATS_KV` namespace; keys are prefixed `sess:`). Migration `0003` adds public beat discovery plus star/thumb reactions. Migration `0004` adds auto-generated beat tags.
 
 After upgrading an existing database, run migrations again:
 
