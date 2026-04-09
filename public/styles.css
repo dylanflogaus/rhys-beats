@@ -13,6 +13,15 @@ a {
   color: #748ffc;
 }
 
+.profile-link {
+  color: #91a7ff;
+  text-decoration: none;
+}
+
+.profile-link:hover {
+  text-decoration: underline;
+}
+
 .container {
   max-width: 920px;
   margin: 0 auto;
@@ -52,6 +61,31 @@ form label {
   display: block;
   margin-bottom: 0.8rem;
   font-size: 0.95rem;
+}
+
+.title-roll-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.title-roll-row input {
+  margin-top: 0.35rem;
+}
+
+.dice-roll-btn {
+  width: auto;
+  margin-top: 0.35rem;
+  padding: 0.6rem 0.75rem;
+  font-size: 1.1rem;
+  line-height: 1;
+  border-radius: 8px;
+  background: #2b3348;
+  border: 1px solid #42506f;
+}
+
+.dice-roll-btn:hover {
+  background: #39415b;
 }
 
 .checkbox-row {
@@ -160,6 +194,14 @@ button:hover {
   font-size: 0.9rem;
 }
 
+.download-btn {
+  display: inline-block;
+  width: auto;
+  text-decoration: none;
+  color: #f2f3f5;
+  text-align: center;
+}
+
 .reaction-btn span {
   color: #d0d7e8;
 }
@@ -228,6 +270,10 @@ audio {
     width: 100%;
   }
 
+  .download-btn {
+    width: 100%;
+  }
+
   .discover-controls {
     flex-direction: column;
     align-items: stretch;
@@ -247,6 +293,10 @@ audio {
 
   .range-filter select {
     width: 100%;
+  }
+
+  .profile-stats {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -293,4 +343,43 @@ audio {
   padding: 0.45rem 0.75rem;
   background: #495057;
   font-size: 0.9rem;
+}
+
+.profile-header h1 {
+  margin: 0;
+}
+
+.profile-header .meta {
+  margin-top: 0.4rem;
+}
+
+.profile-stats {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.stat-card {
+  margin: 0;
+  background: #101521;
+  border: 1px solid #2f374b;
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+
+.stat-card .meta {
+  margin: 0;
+}
+
+.stat-value {
+  margin: 0.3rem 0 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+@media (max-width: 850px) {
+  .profile-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }

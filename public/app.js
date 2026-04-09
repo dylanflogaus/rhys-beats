@@ -8,12 +8,73 @@ const formMessage = document.getElementById("formMessage");
 const userBar = document.getElementById("userBar");
 const userLabel = document.getElementById("userLabel");
 const logoutBtn = document.getElementById("logoutBtn");
+const titleInput = beatForm?.querySelector('input[name="title"]');
+const rollTitleBtn = document.getElementById("rollTitleBtn");
+const titleSuggestion = document.getElementById("titleSuggestion");
 
 const fetchOpts = { credentials: "same-origin" };
 const discoverState = {
   sort: "most_starred",
   range: "week",
 };
+const beatNameParts = {
+  first: [
+    "Midnight",
+    "Velvet",
+    "Neon",
+    "Golden",
+    "Shadow",
+    "Crystal",
+    "Lowkey",
+    "Turbo",
+    "Electric",
+    "Cloud",
+  ],
+  second: [
+    "Bounce",
+    "Drift",
+    "Pulse",
+    "Heat",
+    "Dreams",
+    "Run",
+    "Groove",
+    "Session",
+    "Rhythm",
+    "Haze",
+  ],
+  ending: [
+    "Vol. 1",
+    "Type Beat",
+    "Mix",
+    "Loop",
+    "Edit",
+    "Flip",
+    "Cut",
+    "Mode",
+    "Tape",
+    "Vibe",
+  ],
+};
+
+function pickRandom(list) {
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+function generateBeatTitle() {
+  return `${pickRandom(beatNameParts.first)} ${pickRandom(beatNameParts.second)} ${pickRandom(beatNameParts.ending)}`;
+}
+
+function rollBeatTitle(shouldFillInput = true) {
+  const suggestion = generateBeatTitle();
+  if (titleSuggestion) {
+    titleSuggestion.textContent = `Suggested: ${suggestion}`;
+  }
+  if (shouldFillInput && titleInput) {
+    titleInput.value = suggestion;
+    titleInput.focus();
+  }
+  return suggestion;
+}
 
 async function requireAuth() {
   const response = await fetch("/api/auth/me", fetchOpts);
@@ -91,13 +152,22 @@ function reactionButton(label, reactionType, myReaction, count) {
   </button>`;
 }
 
+function profileLink(username) {
+  const safeUsername = String(username ?? "");
+  return `<a class="profile-link" href="/profile.html?u=${encodeURIComponent(safeUsername)}">${escapeHtml(safeUsername)}</a>`;
+}
+
+function downloadLink(beatId) {
+  return `<a class="reaction-btn download-btn" href="/api/beats/audio/${beatId}?download=1" download>Download</a>`;
+}
+
 function renderDiscoverBeat(beat) {
   return `
     <article class="beat-item" data-beat-id="${beat.id}" data-starred="${beat.isStarred ? "1" : "0"}">
       <div class="beat-top">
         <div>
           <h3 class="beat-title">${escapeHtml(beat.title)}</h3>
-          <p class="meta">By ${escapeHtml(beat.username)}</p>
+          <p class="meta">By ${profileLink(beat.username)}</p>
           ${renderBeatMeta(beat) ? `<p class="meta">${renderBeatMeta(beat)}</p>` : ""}
           ${beat.notes ? `<p class="meta">${escapeHtml(beat.notes)}</p>` : ""}
         </div>
@@ -105,6 +175,7 @@ function renderDiscoverBeat(beat) {
       <audio controls src="/api/beats/audio/${beat.id}"></audio>
       <div class="reaction-row">
         ${reactionButton("Star", "star", beat.isStarred, beat.reactionCounts?.star ?? 0)}
+        ${downloadLink(beat.id)}
       </div>
     </article>
   `;
@@ -116,7 +187,7 @@ function renderStarredBeat(beat) {
       <div class="beat-top">
         <div>
           <h3 class="beat-title">${escapeHtml(beat.title)}</h3>
-          <p class="meta">By ${escapeHtml(beat.username)}</p>
+          <p class="meta">By ${profileLink(beat.username)}</p>
           ${renderBeatMeta(beat) ? `<p class="meta">${renderBeatMeta(beat)}</p>` : ""}
           ${beat.notes ? `<p class="meta">${escapeHtml(beat.notes)}</p>` : ""}
         </div>
@@ -124,6 +195,7 @@ function renderStarredBeat(beat) {
       <audio controls src="/api/beats/audio/${beat.id}"></audio>
       <div class="reaction-row">
         ${reactionButton("Starred", "star", true, beat.reactionCounts?.star ?? 0)}
+        ${downloadLink(beat.id)}
       </div>
     </article>
   `;
@@ -220,6 +292,7 @@ beatForm?.addEventListener("submit", async (event) => {
     }
 
     beatForm.reset();
+    rollBeatTitle(false);
     formMessage.textContent = "Beat saved.";
     await fetchBeats();
     await Promise.all([fetchDiscoverBeats(), fetchSavedBeats()]);
@@ -227,6 +300,10 @@ beatForm?.addEventListener("submit", async (event) => {
     formMessage.textContent = error.message;
     formMessage.classList.add("error");
   }
+});
+
+rollTitleBtn?.addEventListener("click", () => {
+  rollBeatTitle(true);
 });
 
 beatsList?.addEventListener("click", async (event) => {
@@ -338,6 +415,7 @@ function escapeHtml(value) {
 requireAuth()
   .then((user) => {
     if (user) showUser(user);
+    if (titleSuggestion) rollBeatTitle(false);
     setActiveSortTab(discoverState.sort);
   })
   .catch(() => {

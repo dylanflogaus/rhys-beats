@@ -26,7 +26,11 @@
           <div class="grid">
             <label>
               Title *
-              <input type="text" name="title" required />
+              <div class="title-roll-row">
+                <input type="text" name="title" required />
+                <button type="button" id="rollTitleBtn" class="dice-roll-btn" aria-label="Roll random beat name">🎲</button>
+              </div>
+              <p id="titleSuggestion" class="meta">Need ideas? Roll the dice for a beat name.</p>
             </label>
             <label>
               Producer
@@ -68,14 +72,14 @@
 
         <div class="library-subsection" id="savedLibrarySection">
           <h3>Beats I've saved</h3>
-          <p class="meta">Public beats from other creators you've starred. They stay here until you unstar them.</p>
+          <p class="meta">Public beats from other creators you've starred. They stay here until you unstar them, and you can download them anytime.</p>
           <div id="savedBeatsList" class="beats-list"></div>
         </div>
       </section>
 
       <section class="card" id="discoverSection">
         <h2>Discover</h2>
-        <p class="meta">Browse public beats from other creators and star your favorites.</p>
+        <p class="meta">Browse public beats from other creators, star your favorites, and download tracks you like.</p>
         <div class="discover-controls">
           <div class="tab-row" id="discoverSortTabs">
             <button type="button" class="tab-btn active" data-sort="most_starred">Most Starred</button>

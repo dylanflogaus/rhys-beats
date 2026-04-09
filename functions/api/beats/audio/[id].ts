@@ -19,13 +19,21 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
   if (Number.isNaN(beatId)) {
     return jsonError("Invalid beat id.", 400);
   }
+  const requestUrl = new URL(request.url);
+  const shouldDownload = requestUrl.searchParams.get("download") === "1";
 
   try {
     const row = await env.DB.prepare(
-      "SELECT r2_key, mime_type, user_id, is_public FROM beats WHERE id = ?"
+      "SELECT r2_key, file_name, mime_type, user_id, is_public FROM beats WHERE id = ?"
     )
       .bind(beatId)
-      .first<{ r2_key: string; mime_type: string; user_id: number | null; is_public: number | null }>();
+      .first<{
+        r2_key: string;
+        file_name: string | null;
+        mime_type: string;
+        user_id: number | null;
+        is_public: number | null;
+      }>();
 
     if (!row) {
       return jsonError("Beat not found.", 404);
@@ -39,12 +47,17 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
       return jsonError("File missing.", 404);
     }
 
-    return new Response(data, {
-      headers: {
-        "Content-Type": row.mime_type || "audio/mpeg",
-        "Cache-Control": "public, max-age=604800",
-      },
-    });
+    const fileName = String(row.file_name || `beat-${beatId}.mp3`).replace(/[\r\n"]/g, "_");
+    const headers: Record<string, string> = {
+      "Content-Type": row.mime_type || "audio/mpeg",
+      "Cache-Control": "public, max-age=604800",
+    };
+    if (shouldDownload) {
+      headers["Content-Disposition"] =
+        `attachment; filename="${fileName}"; filename*=UTF-8''${encodeURIComponent(fileName)}`;
+    }
+
+    return new Response(data, { headers });
   } catch (error) {
     return jsonError(`Failed to stream beat: ${getErrorMessage(error)}`, 500);
   }

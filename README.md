@@ -73,6 +73,12 @@ npx wrangler pages deploy public
 
 —not `wrangler deploy`.
 
+To force a deployment directly to production branch `main` from this repo:
+
+```bash
+npm run deploy:prod
+```
+
 Add bindings under Pages project settings:
 - D1 binding: `DB`
 - KV binding: `BEATS_KV`
