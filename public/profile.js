@@ -1,7 +1,4 @@
 (function () {
-const userBar = document.getElementById("userBar");
-const userLabel = document.getElementById("userLabel");
-const logoutBtn = document.getElementById("logoutBtn");
 const pageHeaderTitle = document.getElementById("pageHeaderTitle");
 const pageHeaderSubtitle = document.getElementById("pageHeaderSubtitle");
 const profileStats = document.getElementById("profileStats");
@@ -10,32 +7,37 @@ function setProfileHeading(title, subtitle) {
   if (pageHeaderTitle && title != null) pageHeaderTitle.textContent = title;
   if (pageHeaderSubtitle && subtitle != null) pageHeaderSubtitle.textContent = subtitle;
 }
-const profileBeatsList = document.getElementById("profileBeatsList");
 const fetchOpts = { credentials: "same-origin" };
 const TRAY_STAR_ICON = `<svg class="tray-icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
 const urlParams = new URLSearchParams(window.location.search);
 const requestedUsername = (urlParams.get("u") || urlParams.get("username") || "").trim();
-const isStandaloneProfilePage = /profile\.html$/i.test(location.pathname);
 
 let currentProfileUsername = requestedUsername;
 let isOwnProfile = false;
 
-async function requireAuth() {
-  const response = await fetch("/api/auth/me", fetchOpts);
-  if (response.status === 401) {
-    window.location.replace("/login.html");
-    return null;
-  }
-  if (!response.ok) {
-    throw new Error("Could not verify login.");
-  }
-  return response.json();
+function getProfileBeatsList() {
+  return document.getElementById("profileBeatsList");
 }
 
-function showUser(user) {
-  if (!userBar || !userLabel) return;
-  userLabel.textContent = `Signed in as ${user.username}`;
-  userBar.hidden = false;
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function profileLink(username) {
+  const safeUsername = String(username ?? "");
+  return `<a class="profile-link" href="/index.html?u=${encodeURIComponent(safeUsername)}#profile">${escapeHtml(safeUsername)}</a>`;
+}
+
+function activateProfileView(user) {
+  if (!getProfileBeatsList()) return;
+  setProfileHeading("Profile", "Loading profile...");
+  resolveProfileUsername(user);
+  return fetchProfile();
 }
 
 function renderBeatMeta(beat) {
@@ -51,11 +53,6 @@ function beatTopTitleHtml(beat) {
 function beatProductionMetaHtml(beat) {
   const meta = renderBeatMeta(beat);
   return meta ? `<p class="meta beat-production-meta">${meta}</p>` : "";
-}
-
-function profileLink(username) {
-  const safeUsername = String(username ?? "");
-  return `<a class="profile-link" href="/profile.html?u=${encodeURIComponent(safeUsername)}">${escapeHtml(safeUsername)}</a>`;
 }
 
 function renderBeatTags(beat) {
@@ -149,29 +146,31 @@ function renderProfile(payload) {
 
   isOwnProfile = Boolean(profile.isOwnProfile);
   currentProfileUsername = profile.username || currentProfileUsername;
-  if (isStandaloneProfilePage) {
-    document.title = `${profile.username} - Beat Vault`;
-  }
   setProfileHeading(
     `${profile.username}'s Profile`,
     isOwnProfile ? "This is your creator profile." : `Creator since ${formatJoined(profile.joinedAt)}`,
   );
 
-  profileStats.innerHTML = [
-    renderStat("Beats shown", profile.beatCount ?? beats.length),
-    renderStat("Public beats", profile.publicBeatCount ?? 0),
-    renderStat("Stars received", profile.totalStarsReceived ?? 0),
-    renderStat("Joined", formatJoined(profile.joinedAt)),
-  ].join("");
+  if (profileStats) {
+    profileStats.innerHTML = [
+      renderStat("Beats shown", profile.beatCount ?? beats.length),
+      renderStat("Public beats", profile.publicBeatCount ?? 0),
+      renderStat("Stars received", profile.totalStarsReceived ?? 0),
+      renderStat("Joined", formatJoined(profile.joinedAt)),
+    ].join("");
+  }
+
+  const beatsEl = getProfileBeatsList();
+  if (!beatsEl) return;
 
   if (!beats.length) {
-    profileBeatsList.innerHTML = "<p>No beats available for this profile yet.</p>";
-    window.BeatVaultPlaybackLoop?.hydratePlayersIn(profileBeatsList);
+    beatsEl.innerHTML = "<p>No beats available for this profile yet.</p>";
+    window.BeatVaultPlaybackLoop?.hydratePlayersIn(beatsEl);
     return;
   }
 
-  profileBeatsList.innerHTML = beats.map(renderProfileBeat).join("");
-  window.BeatVaultPlaybackLoop?.hydratePlayersIn(profileBeatsList);
+  beatsEl.innerHTML = beats.map(renderProfileBeat).join("");
+  window.BeatVaultPlaybackLoop?.hydratePlayersIn(beatsEl);
 }
 
 function resolveProfileUsername(user) {
@@ -184,21 +183,21 @@ function resolveProfileUsername(user) {
   }
 }
 
-async function bootstrapProfileView(user) {
-  if (!profileBeatsList) return;
-  resolveProfileUsername(user);
-  await fetchProfile();
-}
-
 async function fetchProfile() {
-  if (!currentProfileUsername) {
+  const beatsEl = getProfileBeatsList();
+
+  if (!currentProfileUsername.trim()) {
     setProfileHeading("Profile", "No profile user was provided.");
-    profileBeatsList.innerHTML =
-      '<p>Open this page from a profile link in Discover or Saved beats.</p>';
+    if (beatsEl) {
+      beatsEl.innerHTML =
+        '<p>Open this page from a profile link in Discover or Saved beats, or sign in again if your account has no username.</p>';
+    }
     return;
   }
 
-  profileBeatsList.innerHTML = "<p>Loading profile beats...</p>";
+  if (beatsEl) {
+    beatsEl.innerHTML = "<p>Loading profile beats...</p>";
+  }
 
   try {
     const response = await fetch(`/api/users/${encodeURIComponent(currentProfileUsername)}`, fetchOpts);
@@ -208,18 +207,29 @@ async function fetchProfile() {
     }
     if (response.status === 404) {
       setProfileHeading("Profile", "Profile not found.");
-      profileBeatsList.innerHTML = "<p>That creator profile does not exist.</p>";
+      if (beatsEl) {
+        beatsEl.innerHTML = "<p>That creator profile does not exist.</p>";
+      }
       return;
     }
 
-    const data = await response.json();
+    const raw = await response.text();
+    let data;
+    try {
+      data = raw ? JSON.parse(raw) : {};
+    } catch (_parseErr) {
+      throw new Error(response.ok ? "Invalid profile response from server." : raw.slice(0, 200) || `HTTP ${response.status}`);
+    }
     if (!response.ok) {
-      throw new Error(data.error || "Failed to load profile.");
+      throw new Error(data.error || `Failed to load profile (HTTP ${response.status}).`);
     }
     renderProfile(data);
   } catch (error) {
     setProfileHeading("Profile", "Failed to load profile.");
-    profileBeatsList.innerHTML = `<p>${escapeHtml(error.message || "Could not load profile.")}</p>`;
+    const el = getProfileBeatsList();
+    if (el) {
+      el.innerHTML = `<p>${escapeHtml(error.message || "Could not load profile.")}</p>`;
+    }
   }
 }
 
@@ -248,49 +258,24 @@ async function toggleStarForBeat(item) {
   }
 }
 
-profileBeatsList?.addEventListener("click", async (event) => {
-  const button = event.target.closest('button[data-reaction="star"]');
-  if (!button) return;
-  const item = button.closest("[data-beat-id]");
-  if (!item) return;
-  await toggleStarForBeat(item);
-});
+document.addEventListener(
+  "click",
+  async (event) => {
+    const beatsList = getProfileBeatsList();
+    if (!beatsList || !beatsList.contains(event.target)) return;
+    const button = event.target.closest('button[data-reaction="star"]');
+    if (!button) return;
+    const item = button.closest("[data-beat-id]");
+    if (!item) return;
+    await toggleStarForBeat(item);
+  },
+  true,
+);
 
-if (isStandaloneProfilePage) {
-  logoutBtn?.addEventListener("click", async () => {
-    try {
-      await fetch("/api/auth/logout", { method: "POST", ...fetchOpts });
-    } catch (_e) {
-      // ignore
-    }
-    window.location.replace("/login.html");
-  });
-
-  requireAuth()
-    .then((user) => {
-      if (!user) {
-        window.location.replace("/login.html");
-        return;
-      }
-      showUser(user);
-      return bootstrapProfileView(user);
-    })
-    .catch(() => {
-      window.location.replace("/login.html");
-    });
-} else {
-  window.initBeatVaultProfilePanel = (user) => {
-    void bootstrapProfileView(user);
-  };
-}
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
+window.BeatVaultProfile = {
+  activate(user) {
+    return activateProfileView(user);
+  },
+};
 
 })();

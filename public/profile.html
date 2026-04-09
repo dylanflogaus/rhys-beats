@@ -3,51 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Creator Profile - Beat Vault</title>
-    <link rel="stylesheet" href="/styles.css" />
+    <title>Profile — Beat Vault</title>
+    <script>
+      (function () {
+        var q = window.location.search || "";
+        window.location.replace("/index.html" + q + "#profile");
+      })();
+    </script>
   </head>
-  <body class="with-sidebar">
-    <main class="app-shell">
-      <aside class="sidebar">
-        <div class="sidebar-brand">
-          <p class="meta">Beat Vault</p>
-          <h1>Creator Hub</h1>
-        </div>
-        <nav class="sidebar-nav">
-          <a href="/index.html#discover" class="sidebar-link">Discover</a>
-          <a href="/index.html#library" class="sidebar-link">Library</a>
-          <a href="/index.html#profile" class="sidebar-link active">Profile</a>
-          <a href="/index.html#studio" class="sidebar-link">Studio</a>
-          <a href="/upload.html" class="sidebar-link">Upload</a>
-        </nav>
-      </aside>
-
-      <section class="container main-content">
-        <div class="topbar" id="userBar" hidden>
-          <p class="meta" id="userLabel"></p>
-          <div class="actions">
-            <a class="link-btn" href="/index.html#library">Back to Beat Vault</a>
-            <button type="button" class="logout-btn" id="logoutBtn">Log out</button>
-          </div>
-        </div>
-
-        <header class="header">
-          <h2 id="pageHeaderTitle">Profile</h2>
-          <p id="pageHeaderSubtitle">Loading profile...</p>
-        </header>
-
-        <section class="card">
-          <div class="profile-stats" id="profileStats"></div>
-        </section>
-
-        <section class="card">
-          <h2>Beats</h2>
-          <div id="profileBeatsList" class="beats-list"></div>
-        </section>
-      </section>
-    </main>
-
-    <script src="/playback-loop.js"></script>
-    <script src="/profile.js"></script>
+  <body>
+    <p>Redirecting to <a href="/index.html#profile">Profile</a>…</p>
   </body>
 </html>

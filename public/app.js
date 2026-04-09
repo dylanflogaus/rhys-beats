@@ -38,13 +38,13 @@ const PAGE_HEADER_COPY = {
     title: "Discover",
     subtitle: "Browse public beats from the community, filter by tags, and star what you love.",
   },
-  profile: {
-    title: "Profile",
-    subtitle: "Loading profile...",
-  },
   studio: {
     title: "Studio",
     subtitle: "A focused snapshot of your workflow—tune this space as you grow.",
+  },
+  upload: {
+    title: "Upload beat",
+    subtitle: "Add a new beat to your library and optionally publish it to Discover.",
   },
 };
 
@@ -69,6 +69,10 @@ function syncPageHeaderWithNav() {
   const page = activePanel?.dataset.page;
   if (page === "library") {
     applyPageHeader(LIBRARY_HEADER_COPY[libraryView] ?? LIBRARY_HEADER_COPY.mine);
+    return;
+  }
+  if (page === "profile") {
+    applyPageHeader({ title: "Profile", subtitle: "Loading profile..." });
     return;
   }
   const copy = page ? PAGE_HEADER_COPY[page] : null;
@@ -161,7 +165,10 @@ async function requireAuth() {
 
 function showUser(user) {
   if (!userBar || !userLabel) return;
-  userLabel.textContent = `Signed in as ${user.username}`;
+  const name = String(user.username ?? "").trim();
+  userLabel.innerHTML = name
+    ? `Signed in as <a class="profile-link" href="/index.html?u=${encodeURIComponent(name)}#profile">${escapeHtml(name)}</a>`
+    : "Signed in as —";
   userBar.hidden = false;
   currentAuthUser = user;
 }
@@ -208,9 +215,13 @@ function setActivePage(page, { updateHash = true } = {}) {
     link.classList.toggle("active", link.dataset.page === nextPage);
   });
   if (updateHash) {
-    const targetHash = `#${nextPage}`;
-    if (window.location.hash !== targetHash) {
-      window.history.replaceState(null, "", targetHash);
+    if (nextPage === "profile") {
+      window.history.replaceState(null, "", `${window.location.pathname}#profile`);
+    } else {
+      const targetHash = `#${nextPage}`;
+      if (window.location.hash !== targetHash) {
+        window.history.replaceState(null, "", targetHash);
+      }
     }
   }
 
@@ -218,17 +229,18 @@ function setActivePage(page, { updateHash = true } = {}) {
     void fetchSavedBeats();
   }
 
-  if (nextPage === "profile") {
-    window.initBeatVaultProfilePanel?.(currentAuthUser);
-  }
-
   syncPageHeaderWithNav();
+  if (nextPage === "profile" && window.BeatVaultProfile) {
+    void window.BeatVaultProfile.activate(currentAuthUser);
+  }
 }
 
 function initSidebarNavigation() {
   if (!viewPanels.length || !sidebarLinks.length) return;
-  const initialPage = getHashPage() || viewPanels[0]?.dataset.page || "discover";
-  setActivePage(initialPage, { updateHash: true });
+  const raw = getHashPage();
+  const valid = Boolean(raw && viewPanels.some((p) => p.dataset.page === raw));
+  const initialPage = valid ? raw : viewPanels[0]?.dataset.page || "discover";
+  setActivePage(initialPage, { updateHash: !valid || !raw });
 
   sidebarLinks.forEach((link) => {
     link.addEventListener("click", (event) => {
@@ -554,7 +566,7 @@ function starToggleButton(isStarred, starCount) {
 
 function profileLink(username) {
   const safeUsername = String(username ?? "");
-  return `<a class="profile-link" href="/profile.html?u=${encodeURIComponent(safeUsername)}">${escapeHtml(safeUsername)}</a>`;
+  return `<a class="profile-link" href="/index.html?u=${encodeURIComponent(safeUsername)}#profile">${escapeHtml(safeUsername)}</a>`;
 }
 
 function renderDiscoverBeat(beat) {

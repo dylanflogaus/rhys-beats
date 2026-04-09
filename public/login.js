@@ -1,6 +1,16 @@
 const form = document.getElementById("loginForm");
 const message = document.getElementById("formMessage");
+const registerLink = document.getElementById("registerLink");
 const fetchOpts = { credentials: "same-origin" };
+
+registerLink?.addEventListener("click", (event) => {
+  const usernameInput = form?.querySelector('[name="username"]');
+  const username = String(usernameInput?.value ?? "").trim();
+  if (!username) return;
+  event.preventDefault();
+  const params = new URLSearchParams({ username });
+  window.location.href = `/register.html?${params.toString()}`;
+});
 
 form?.addEventListener("submit", async (event) => {
   event.preventDefault();

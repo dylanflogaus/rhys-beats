@@ -53,7 +53,7 @@
             <span class="sidebar-link-icon icon-studio" aria-hidden="true"></span>
             <span class="sidebar-link-text">Studio</span>
           </a>
-          <a href="/upload.html" class="sidebar-link" aria-label="Upload">
+          <a href="#upload" class="sidebar-link" data-page="upload" aria-label="Upload">
             <span class="sidebar-link-icon icon-upload" aria-hidden="true"></span>
             <span class="sidebar-link-text">Upload</span>
           </a>
@@ -143,16 +143,6 @@
           </section>
         </section>
 
-        <section class="view-panel" data-page="profile">
-          <section class="card">
-            <div class="profile-stats" id="profileStats"></div>
-          </section>
-          <section class="card">
-            <h2>Beats</h2>
-            <div id="profileBeatsList" class="beats-list"></div>
-          </section>
-        </section>
-
         <section class="view-panel" data-page="studio">
           <section class="card">
             <div class="profile-stats">
@@ -173,14 +163,81 @@
                 <p class="stat-value">Melodic trap</p>
               </article>
             </div>
-            <p class="meta">This section is intentionally lightweight for now so you can flesh it out with your own creator workflow later.</p>
+          </section>
+        </section>
+
+        <section class="view-panel" data-page="profile">
+          <section class="card">
+            <div class="profile-stats" id="profileStats"></div>
+          </section>
+
+          <section class="card">
+            <h2>Beats</h2>
+            <div id="profileBeatsList" class="beats-list"></div>
+          </section>
+        </section>
+
+        <section class="view-panel" data-page="upload">
+          <section class="card">
+            <h2>Add Beat</h2>
+            <form id="beatForm">
+              <div class="grid">
+                <label>
+                  Title *
+                  <div class="title-roll-row">
+                    <input type="text" name="title" required />
+                    <button type="button" id="rollTitleBtn" class="dice-roll-btn" aria-label="Roll random beat name">🎲</button>
+                  </div>
+                  <p id="titleSuggestion" class="meta">Need ideas? Roll the dice for a beat name.</p>
+                </label>
+                <label>
+                  Producer
+                  <input type="text" name="producer" />
+                </label>
+                <label>
+                  BPM
+                  <input type="number" name="bpm" min="1" max="300" />
+                </label>
+                <label>
+                  Key
+                  <input type="text" name="beatKey" placeholder="e.g. F# minor" />
+                </label>
+              </div>
+
+              <label>
+                Notes
+                <textarea name="notes" rows="3" placeholder="Mood, use-case, tags..."></textarea>
+              </label>
+
+              <label>
+                Custom tags
+                <input type="text" name="customTags" placeholder="Comma separated: dark, melodic, 140bpm" />
+                <p class="meta">Add your own tags and we'll combine them with auto tags.</p>
+              </label>
+
+              <label>
+                Audio File *
+                <input type="file" name="beatFile" accept="audio/*" required />
+                <input type="hidden" name="autoTags" />
+                <p id="analysisPreview" class="meta"></p>
+                <div id="autoTagsEditor" class="tag-editor"></div>
+              </label>
+
+              <label class="checkbox-row">
+                <input type="checkbox" name="isPublic" value="1" checked />
+                Make this beat public in Discover
+              </label>
+
+              <button type="submit">Save Beat</button>
+              <p id="formMessage" class="message"></p>
+            </form>
           </section>
         </section>
 
         <script>
           (function () {
-            var pages = { discover: 1, library: 1, profile: 1, studio: 1 };
             var raw = (window.location.hash || "").replace(/^#/, "").trim().toLowerCase();
+            var pages = { discover: 1, library: 1, studio: 1, profile: 1, upload: 1 };
             var page = pages[raw] ? raw : "discover";
 
             document.querySelectorAll(".view-panel[data-page]").forEach(function (panel) {
@@ -199,13 +256,17 @@
               titleEl.textContent = "My beats";
               subEl.textContent =
                 "Upload, edit visibility, and manage the instrumentals in your library.";
-            } else if (page === "profile") {
-              titleEl.textContent = "Profile";
-              subEl.textContent = "Loading profile...";
             } else if (page === "studio") {
               titleEl.textContent = "Studio";
               subEl.textContent =
                 "A focused snapshot of your workflow—tune this space as you grow.";
+            } else if (page === "profile") {
+              titleEl.textContent = "Profile";
+              subEl.textContent = "Loading profile...";
+            } else if (page === "upload") {
+              titleEl.textContent = "Upload beat";
+              subEl.textContent =
+                "Add a new beat to your library and optionally publish it to Discover.";
             }
           })();
         </script>

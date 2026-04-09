@@ -2,6 +2,21 @@ const form = document.getElementById("registerForm");
 const message = document.getElementById("formMessage");
 const fetchOpts = { credentials: "same-origin" };
 
+(function prefillUsernameFromLogin() {
+  const params = new URLSearchParams(window.location.search);
+  const fromQuery = params.get("username");
+  if (!fromQuery) return;
+  const usernameInput = form?.querySelector('[name="username"]');
+  if (!usernameInput) return;
+  usernameInput.value = fromQuery;
+  if (window.history?.replaceState) {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("username");
+    const qs = url.searchParams.toString();
+    window.history.replaceState(null, "", qs ? `${url.pathname}?${qs}` : url.pathname);
+  }
+})();
+
 form?.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!message) return;
@@ -31,7 +46,12 @@ form?.addEventListener("submit", async (event) => {
     const body = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      throw new Error(body.error || "Registration failed.");
+      const errText =
+        body.error ||
+        (response.status === 409
+          ? "That username is already taken. Try another or sign in."
+          : "Registration failed.");
+      throw new Error(errText);
     }
 
     window.location.href = "/";
