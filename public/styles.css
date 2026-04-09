@@ -456,6 +456,29 @@ select {
   color: #f2f3f5;
 }
 
+/* File inputs: global input styles break tap targets on iOS Safari / WebKit. */
+input[type="file"] {
+  max-width: 100%;
+  padding: 0.5rem 0.6rem;
+  min-height: 2.75rem;
+  font-size: 1rem;
+  line-height: 1.25;
+  cursor: pointer;
+}
+
+input[type="file"]::file-selector-button,
+input[type="file"]::-webkit-file-upload-button {
+  margin-right: 0.75rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 6px;
+  border: 1px solid #42506f;
+  background: #2b3348;
+  color: #f2f3f5;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 textarea {
   resize: vertical;
 }
@@ -1503,6 +1526,21 @@ button.discover-tag-chip:hover {
 
   .sidebar-link.active .sidebar-link-icon {
     background-color: var(--accent);
+  }
+
+  /* Desktop collapsed sidebar hides labels; mobile drawer must always show them. */
+  body.sidebar-collapsed .mobile-nav-panel .sidebar-link-text {
+    display: revert;
+  }
+
+  body.sidebar-collapsed .mobile-nav-panel .sidebar-link {
+    justify-content: flex-start;
+    padding: 0.55rem 0.75rem;
+  }
+
+  body.sidebar-collapsed .mobile-nav-panel .sidebar-link-icon {
+    width: 1.05rem;
+    height: 1.05rem;
   }
 
   .mobile-nav-backdrop {

@@ -8,6 +8,7 @@ import {
   hasBeatsTagsColumn,
   jsonError,
   parseTagsInput,
+  resolveBeatUploadMimeType,
   rowToBeat,
   stringifyTags,
 } from "../lib/shared";
@@ -65,7 +66,8 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
       if (!(fileInput instanceof File)) {
         return jsonError("Beat file is required.", 400);
       }
-      if (!fileInput.type.startsWith("audio/")) {
+      const resolvedMime = resolveBeatUploadMimeType(fileInput.name, fileInput.type);
+      if (!resolvedMime) {
         return jsonError("Only audio files are allowed.", 400);
       }
       if (fileInput.size > MAX_FILE_SIZE_BYTES) {
@@ -75,7 +77,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
       const safeName = fileInput.name.replace(/\s+/g, "-").toLowerCase() || "beat";
       const fileKey = `${Date.now()}-${safeName}`;
       await env.BEATS_KV.put(fileKey, await fileInput.arrayBuffer(), {
-        metadata: { mimeType: fileInput.type },
+        metadata: { mimeType: resolvedMime },
       });
 
       const hasTagsColumn = await hasBeatsTagsColumn(env.DB);
@@ -98,7 +100,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
               stringifyTags(tags),
               safeName,
               fileKey,
-              fileInput.type,
+              resolvedMime,
               isPublic
             )
             .first<BeatRow>()
@@ -119,7 +121,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
               notes || null,
               safeName,
               fileKey,
-              fileInput.type,
+              resolvedMime,
               isPublic
             )
             .first<BeatRow>();

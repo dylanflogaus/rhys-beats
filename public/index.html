@@ -239,7 +239,12 @@
 
               <label>
                 Audio File *
-                <input type="file" name="beatFile" accept="audio/*" required />
+                <input
+                  type="file"
+                  name="beatFile"
+                  accept="audio/*,audio/mpeg,audio/mp3,.mp3,.m4a,.wav,.aac,.caf,.aiff,.flac,.ogg,.opus"
+                  required
+                />
                 <input type="hidden" name="autoTags" />
                 <p id="analysisPreview" class="meta"></p>
                 <div id="autoTagsEditor" class="tag-editor"></div>

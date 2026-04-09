@@ -18,6 +18,43 @@ export type BeatRow = {
 };
 
 export const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024;
+
+/**
+ * iOS Safari often reports an empty type or application/octet-stream for Files-app picks.
+ * Normalize using the original filename extension when the reported type is not audio/*.
+ */
+export function resolveBeatUploadMimeType(fileName: string, reportedType: string): string | null {
+  const t = (reportedType || "").trim().toLowerCase();
+  if (t.startsWith("audio/")) return reportedType.trim();
+
+  const canInfer = !t || t === "application/octet-stream";
+  if (!canInfer) return null;
+
+  const lower = fileName.toLowerCase();
+  const dot = lower.lastIndexOf(".");
+  const ext = dot >= 0 ? lower.slice(dot) : "";
+
+  const byExt: Record<string, string> = {
+    ".mp3": "audio/mpeg",
+    ".mpeg": "audio/mpeg",
+    ".mpga": "audio/mpeg",
+    ".m4a": "audio/mp4",
+    ".mp4": "audio/mp4",
+    ".wav": "audio/wav",
+    ".aac": "audio/aac",
+    ".ogg": "audio/ogg",
+    ".oga": "audio/ogg",
+    ".opus": "audio/opus",
+    ".flac": "audio/flac",
+    ".webm": "audio/webm",
+    ".aif": "audio/aiff",
+    ".aiff": "audio/aiff",
+    ".caf": "audio/x-caf",
+  };
+
+  return byExt[ext] ?? null;
+}
+
 const beatsTagsColumnCache = new WeakMap<D1Database, boolean>();
 
 export function jsonError(message: string, status = 400): Response {
