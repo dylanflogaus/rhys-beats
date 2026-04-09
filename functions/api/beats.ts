@@ -51,11 +51,12 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
       const bpmRaw = String(form.get("bpm") ?? "").trim();
       const beatKey = String(form.get("beatKey") ?? "").trim();
       const notes = String(form.get("notes") ?? "").trim();
+      const tagsRaw = String(form.get("tags") ?? "").trim();
       const autoTagsRaw = String(form.get("autoTags") ?? "").trim();
       const isPublicInput = String(form.get("isPublic") ?? "1").trim();
       const bpmVal = bpmRaw ? Number(bpmRaw) : null;
       const isPublic = isPublicInput === "1" ? 1 : 0;
-      const autoTags = parseTagsInput(autoTagsRaw);
+      const tags = parseTagsInput(tagsRaw || autoTagsRaw);
 
       const fileInput = form.get("beatFile");
       if (!title) {
@@ -94,7 +95,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
               bpmVal !== null && Number.isFinite(bpmVal) ? bpmVal : null,
               beatKey || null,
               notes || null,
-              stringifyTags(autoTags),
+              stringifyTags(tags),
               safeName,
               fileKey,
               fileInput.type,

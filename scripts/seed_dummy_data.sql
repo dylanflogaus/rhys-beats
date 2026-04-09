@@ -11,6 +11,7 @@ INSERT INTO beats (
   bpm,
   beat_key,
   notes,
+  tags,
   file_name,
   r2_key,
   mime_type,
@@ -24,6 +25,7 @@ SELECT
   142,
   'F# minor',
   'Dark bounce vibe with heavy 808s.',
+  'trap,dark,bounce,minor-key,142bpm,808,beat,instrumental',
   'midnight-bounce.mp3',
   'seed-midnight-bounce',
   'audio/mpeg',
@@ -44,6 +46,7 @@ INSERT INTO beats (
   bpm,
   beat_key,
   notes,
+  tags,
   file_name,
   r2_key,
   mime_type,
@@ -57,6 +60,7 @@ SELECT
   98,
   'C major',
   'Melodic keys and light percussion.',
+  'lo-fi,chill,melodic,boom-bap,major-key,98bpm,smooth,beat,instrumental',
   'skyline-dreams.mp3',
   'seed-skyline-dreams',
   'audio/mpeg',
@@ -77,6 +81,7 @@ INSERT INTO beats (
   bpm,
   beat_key,
   notes,
+  tags,
   file_name,
   r2_key,
   mime_type,
@@ -90,6 +95,7 @@ SELECT
   130,
   'D minor',
   'Club-ready rhythm and bright synth lead.',
+  'house,groovy,club,synth,energetic,130bpm,minor-key,beat,instrumental',
   'neon-steps.mp3',
   'seed-neon-steps',
   'audio/mpeg',
@@ -110,6 +116,7 @@ INSERT INTO beats (
   bpm,
   beat_key,
   notes,
+  tags,
   file_name,
   r2_key,
   mime_type,
@@ -123,6 +130,7 @@ SELECT
   118,
   'A minor',
   'Private test beat. Should not appear in Discover.',
+  'experimental,hip-hop,118bpm,minor-key,lab,beat,instrumental,dark',
   'private-lab-session.mp3',
   'seed-private-lab-session',
   'audio/mpeg',
@@ -176,7 +184,14 @@ DELETE FROM beat_reactions
 WHERE reaction_type != 'star';
 
 UPDATE beats
-SET mime_type = 'audio/wav'
+SET
+  mime_type = 'audio/wav',
+  tags = CASE r2_key
+    WHEN 'seed-midnight-bounce' THEN 'trap,dark,bounce,minor-key,142bpm,808,beat,instrumental'
+    WHEN 'seed-skyline-dreams' THEN 'lo-fi,chill,melodic,boom-bap,major-key,98bpm,smooth,beat,instrumental'
+    WHEN 'seed-neon-steps' THEN 'house,groovy,club,synth,energetic,130bpm,minor-key,beat,instrumental'
+    WHEN 'seed-private-lab-session' THEN 'experimental,hip-hop,118bpm,minor-key,lab,beat,instrumental,dark'
+  END
 WHERE r2_key IN (
   'seed-midnight-bounce',
   'seed-skyline-dreams',

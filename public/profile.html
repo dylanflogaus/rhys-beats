@@ -6,30 +6,48 @@
     <title>Creator Profile - Beat Vault</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
-  <body>
-    <main class="container">
-      <div class="topbar" id="userBar" hidden>
-        <p class="meta" id="userLabel"></p>
-        <div class="actions">
-          <a class="link-btn" href="/index.html">Back to Beat Vault</a>
-          <button type="button" class="logout-btn" id="logoutBtn">Log out</button>
+  <body class="with-sidebar">
+    <main class="app-shell">
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <p class="meta">Beat Vault</p>
+          <h1>Creator Hub</h1>
         </div>
-      </div>
+        <nav class="sidebar-nav">
+          <a href="/index.html#discover" class="sidebar-link">Discover</a>
+          <a href="/index.html#library" class="sidebar-link">Library</a>
+          <a href="/index.html#profile" class="sidebar-link active">Profile</a>
+          <a href="/index.html#studio" class="sidebar-link">Studio</a>
+          <a href="/upload.html" class="sidebar-link">Upload</a>
+        </nav>
+      </aside>
 
-      <section class="card">
-        <div class="profile-header">
-          <h1 id="profileTitle">Profile</h1>
-          <p class="meta" id="profileSubtitle">Loading profile...</p>
+      <section class="container main-content">
+        <div class="topbar" id="userBar" hidden>
+          <p class="meta" id="userLabel"></p>
+          <div class="actions">
+            <a class="link-btn" href="/index.html#library">Back to Beat Vault</a>
+            <button type="button" class="logout-btn" id="logoutBtn">Log out</button>
+          </div>
         </div>
-        <div class="profile-stats" id="profileStats"></div>
-      </section>
 
-      <section class="card">
-        <h2>Beats</h2>
-        <div id="profileBeatsList" class="beats-list"></div>
+        <header class="header">
+          <h2 id="pageHeaderTitle">Profile</h2>
+          <p id="pageHeaderSubtitle">Loading profile...</p>
+        </header>
+
+        <section class="card">
+          <div class="profile-stats" id="profileStats"></div>
+        </section>
+
+        <section class="card">
+          <h2>Beats</h2>
+          <div id="profileBeatsList" class="beats-list"></div>
+        </section>
       </section>
     </main>
 
+    <script src="/playback-loop.js"></script>
     <script src="/profile.js"></script>
   </body>
 </html>

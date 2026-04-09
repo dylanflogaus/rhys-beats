@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Upload Beat - Beat Vault</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="with-sidebar">
+    <script>
+      try {
+        if (window.localStorage.getItem("beatVaultSidebarCollapsed") === "1") {
+          document.body.classList.add("sidebar-collapsed");
+        }
+      } catch (_e) {
+        // Ignore storage access failures.
+      }
+    </script>
+    <main class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-top">
+          <div class="sidebar-brand">
+            <p class="meta">Beat Vault</p>
+            <h1>Creator Hub</h1>
+          </div>
+          <button
+            type="button"
+            class="sidebar-collapse-btn"
+            id="sidebarCollapseBtn"
+            aria-controls="sidebar"
+            aria-expanded="true"
+            aria-label="Collapse the sidebar"
+            title="Collapse the sidebar"
+          >
+            <span class="sidebar-collapse-icon" aria-hidden="true"></span>
+          </button>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="/index.html#discover" class="sidebar-link" aria-label="Discover">
+            <span class="sidebar-link-icon icon-discover" aria-hidden="true"></span>
+            <span class="sidebar-link-text">Discover</span>
+          </a>
+          <a href="/index.html#library" class="sidebar-link" aria-label="Library">
+            <span class="sidebar-link-icon icon-library" aria-hidden="true"></span>
+            <span class="sidebar-link-text">Library</span>
+          </a>
+          <a href="/index.html#profile" class="sidebar-link" aria-label="Profile">
+            <span class="sidebar-link-icon icon-profile" aria-hidden="true"></span>
+            <span class="sidebar-link-text">Profile</span>
+          </a>
+          <a href="/index.html#studio" class="sidebar-link" aria-label="Studio">
+            <span class="sidebar-link-icon icon-studio" aria-hidden="true"></span>
+            <span class="sidebar-link-text">Studio</span>
+          </a>
+          <a href="/upload.html" class="sidebar-link active" aria-label="Upload">
+            <span class="sidebar-link-icon icon-upload" aria-hidden="true"></span>
+            <span class="sidebar-link-text">Upload</span>
+          </a>
+        </nav>
+      </aside>
+
+      <section class="container main-content">
+        <div class="topbar" id="userBar" hidden>
+          <p class="meta" id="userLabel"></p>
+          <div class="actions">
+            <a class="link-btn" href="/index.html#library">Back to Library</a>
+            <button type="button" class="logout-btn" id="logoutBtn">Log out</button>
+          </div>
+        </div>
+
+        <header class="header">
+          <h1>Upload Beat</h1>
+          <p>Add a new beat to your library and optionally publish it to Discover.</p>
+        </header>
+
+        <section class="card">
+          <h2>Add Beat</h2>
+          <form id="beatForm">
+            <div class="grid">
+              <label>
+                Title *
+                <div class="title-roll-row">
+                  <input type="text" name="title" required />
+                  <button type="button" id="rollTitleBtn" class="dice-roll-btn" aria-label="Roll random beat name">🎲</button>
+                </div>
+                <p id="titleSuggestion" class="meta">Need ideas? Roll the dice for a beat name.</p>
+              </label>
+              <label>
+                Producer
+                <input type="text" name="producer" />
+              </label>
+              <label>
+                BPM
+                <input type="number" name="bpm" min="1" max="300" />
+              </label>
+              <label>
+                Key
+                <input type="text" name="beatKey" placeholder="e.g. F# minor" />
+              </label>
+            </div>
+
+            <label>
+              Notes
+              <textarea name="notes" rows="3" placeholder="Mood, use-case, tags..."></textarea>
+            </label>
+
+            <label>
+              Custom tags
+              <input type="text" name="customTags" placeholder="Comma separated: dark, melodic, 140bpm" />
+              <p class="meta">Add your own tags and we'll combine them with auto tags.</p>
+            </label>
+
+            <label>
+              Audio File *
+              <input type="file" name="beatFile" accept="audio/*" required />
+              <input type="hidden" name="autoTags" />
+              <p id="analysisPreview" class="meta"></p>
+              <div id="autoTagsEditor" class="tag-editor"></div>
+            </label>
+
+            <label class="checkbox-row">
+              <input type="checkbox" name="isPublic" value="1" checked />
+              Make this beat public in Discover
+            </label>
+
+            <button type="submit">Save Beat</button>
+            <p id="formMessage" class="message"></p>
+          </form>
+        </section>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
