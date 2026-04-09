@@ -55,13 +55,8 @@ function beatProductionMetaHtml(beat) {
   return meta ? `<p class="meta beat-production-meta">${meta}</p>` : "";
 }
 
-function renderBeatTags(beat) {
-  if (!Array.isArray(beat.tags) || !beat.tags.length) return "";
-  const chips = beat.tags
-    .slice(0, 8)
-    .map((tag) => `<span>#${escapeHtml(String(tag))}</span>`)
-    .join(" ");
-  return `<p class="meta">${chips}</p>`;
+function cardBeatTagsHtml(beat) {
+  return typeof window.BeatVaultRenderBeatTags === "function" ? window.BeatVaultRenderBeatTags(beat) : "";
 }
 
 function escapeAttr(value) {
@@ -112,7 +107,7 @@ function renderProfileBeat(beat) {
         ${beatProductionMetaHtml(beat)}
         ${beat.notes ? `<p class="meta beat-description">${escapeHtml(beat.notes)}</p>` : ""}
       </div>
-      <div class="beat-item-tags">${renderBeatTags(beat)}</div>
+      <div class="beat-item-tags">${cardBeatTagsHtml(beat)}</div>
       ${ownNote}
     </article>
   `;

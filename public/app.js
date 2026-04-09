@@ -399,14 +399,35 @@ function renderMyBeat(beat) {
   `;
 }
 
-function renderBeatTags(beat) {
-  if (!Array.isArray(beat.tags) || !beat.tags.length) return "";
-  const chips = beat.tags
-    .slice(0, 8)
-    .map((tag) => `<span>#${escapeHtml(String(tag))}</span>`)
-    .join(" ");
-  return `<p class="meta">${chips}</p>`;
+function renderBeatTagBlock(rawTags, { interactive = false, maxTags = 12, showEmpty = true } = {}) {
+  const tags = Array.isArray(rawTags) ? rawTags.map((t) => String(t).trim()).filter(Boolean) : [];
+  if (!tags.length) {
+    if (!showEmpty) return "";
+    return '<div class="beat-tags-block"><p class="meta beat-tags-empty">No tags yet</p></div>';
+  }
+  const chips = tags
+    .slice(0, maxTags)
+    .map((tag) => {
+      const t = String(tag);
+      const label = `#${escapeHtml(t)}`;
+      if (interactive) {
+        return `<button type="button" class="beat-tag-chip discover-tag-chip" data-tag="${escapeAttr(t)}" title="Add #${escapeAttr(t)} to include filter">${label}</button>`;
+      }
+      return `<span class="beat-tag-chip">${label}</span>`;
+    })
+    .join("");
+  return `<div class="beat-tags-block"><div class="beat-tag-chip-row">${chips}</div></div>`;
 }
+
+function renderBeatTags(beat, options = {}) {
+  return renderBeatTagBlock(beat.tags, {
+    interactive: false,
+    maxTags: options.maxTags ?? 12,
+    showEmpty: options.showEmpty !== false,
+  });
+}
+
+window.BeatVaultRenderBeatTags = renderBeatTags;
 
 function beatNormalizedTagSet(beat) {
   const tags = Array.isArray(beat.tags) ? beat.tags : [];
@@ -509,20 +530,7 @@ function renderDiscoverBeatsFromCache(options = {}) {
 }
 
 function renderDiscoverBeatTags(beat) {
-  const tags = Array.isArray(beat.tags)
-    ? beat.tags.map((t) => String(t).trim()).filter(Boolean)
-    : [];
-  if (!tags.length) {
-    return '<p class="meta beat-tags-empty">No tags yet</p>';
-  }
-  const chips = tags
-    .slice(0, 12)
-    .map((tag) => {
-      const t = String(tag);
-      return `<button type="button" class="discover-tag-chip" data-tag="${escapeAttr(t)}" title="Add #${escapeAttr(t)} to include filter">#${escapeHtml(t)}</button>`;
-    })
-    .join("");
-  return `<div class="beat-tags-block"><div class="beat-tag-chip-row">${chips}</div></div>`;
+  return renderBeatTagBlock(beat.tags, { interactive: true, maxTags: 12, showEmpty: true });
 }
 
 async function fetchBeats() {
